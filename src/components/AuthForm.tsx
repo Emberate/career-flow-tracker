@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
+import { Separator } from '@/components/ui/separator';
+import { Linkedin, Briefcase, Mail } from 'lucide-react';
 
 interface AuthFormProps {
   type: 'login' | 'signup';
@@ -15,7 +17,8 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { login, signup } = useAuth();
+  const [socialLoading, setSocialLoading] = useState<string | null>(null);
+  const { login, signup, loginWithLinkedIn, loginWithIndeed } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -50,11 +53,107 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
     }
   };
 
+  const handleLinkedInLogin = async () => {
+    setSocialLoading('linkedin');
+    try {
+      await loginWithLinkedIn();
+      toast({
+        title: "LinkedIn login successful",
+        description: "Welcome to CareerFlow!",
+      });
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('LinkedIn auth error:', error);
+      toast({
+        title: "Authentication error",
+        description: "Failed to login with LinkedIn. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setSocialLoading(null);
+    }
+  };
+
+  const handleIndeedLogin = async () => {
+    setSocialLoading('indeed');
+    try {
+      await loginWithIndeed();
+      toast({
+        title: "Indeed login successful",
+        description: "Welcome to CareerFlow!",
+      });
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('Indeed auth error:', error);
+      toast({
+        title: "Authentication error",
+        description: "Failed to login with Indeed. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setSocialLoading(null);
+    }
+  };
+
   return (
     <div className="max-w-md w-full mx-auto p-8 bg-white rounded-xl shadow-sm">
       <h2 className="text-2xl font-bold text-center mb-6">
         {type === 'login' ? 'Log In to Your Account' : 'Create Your Account'}
       </h2>
+      
+      {/* Social Login Buttons */}
+      <div className="space-y-3 mb-6">
+        <Button 
+          type="button" 
+          className="w-full bg-[#0077b5] hover:bg-[#0077b5]/90" 
+          onClick={handleLinkedInLogin}
+          disabled={!!socialLoading}
+        >
+          {socialLoading === 'linkedin' ? (
+            <span className="flex items-center justify-center">
+              <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Connecting...
+            </span>
+          ) : (
+            <>
+              <Linkedin className="mr-2 h-4 w-4" />
+              Continue with LinkedIn
+            </>
+          )}
+        </Button>
+        
+        <Button 
+          type="button" 
+          className="w-full bg-[#003A9B] hover:bg-[#003A9B]/90" 
+          onClick={handleIndeedLogin}
+          disabled={!!socialLoading}
+        >
+          {socialLoading === 'indeed' ? (
+            <span className="flex items-center justify-center">
+              <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Connecting...
+            </span>
+          ) : (
+            <>
+              <Briefcase className="mr-2 h-4 w-4" />
+              Continue with Indeed
+            </>
+          )}
+        </Button>
+      </div>
+      
+      <div className="relative my-6">
+        <Separator />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span className="bg-white px-2 text-sm text-gray-500">or</span>
+        </div>
+      </div>
       
       <form onSubmit={handleSubmit} className="space-y-4">
         {type === 'signup' && (
@@ -112,7 +211,10 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
               Processing...
             </span>
           ) : (
-            <span>{type === 'login' ? 'Login' : 'Create Account'}</span>
+            <span className="flex items-center">
+              <Mail className="mr-2 h-4 w-4" />
+              {type === 'login' ? 'Login with Email' : 'Create Account'}
+            </span>
           )}
         </Button>
       </form>
