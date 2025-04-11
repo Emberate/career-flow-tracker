@@ -6,6 +6,9 @@ import { Job, JobState } from '../types';
 import JobCard from '../components/JobCard';
 import JobForm from '../components/JobForm';
 import Navbar from '../components/Navbar';
+import JobAnalytics from '../components/JobAnalytics';
+import PaymentHistory from '../components/PaymentHistory';
+import PaymentModal from '../components/PaymentModal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -25,7 +28,21 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Plus, Search, Filter, Briefcase } from 'lucide-react';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
+import { 
+  Plus, 
+  Search, 
+  Filter, 
+  Briefcase, 
+  CreditCard,
+  BarChart,
+  ListChecks
+} from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 
 const Dashboard = () => {
@@ -45,6 +62,8 @@ const Dashboard = () => {
   const [isJobFormOpen, setIsJobFormOpen] = useState(false);
   const [editingJob, setEditingJob] = useState<Job | null>(null);
   const [jobToDelete, setJobToDelete] = useState<string | null>(null);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("jobs");
   
   // Redirect if not authenticated
   useEffect(() => {
@@ -181,6 +200,10 @@ const Dashboard = () => {
     }));
   };
   
+  const handleUpgrade = () => {
+    setIsPaymentModalOpen(true);
+  };
+  
   // Stats calculation
   const totalJobs = state.jobs.length;
   const appliedJobs = state.jobs.filter(j => j.status === 'Applied').length;
@@ -194,15 +217,21 @@ const Dashboard = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">My Job Applications</h1>
+            <h1 className="text-2xl font-bold text-gray-900">My Job Tracker</h1>
             <p className="text-gray-600 mt-1">
               {user?.name ? `Welcome, ${user.name}` : 'Track and manage your job applications'}
             </p>
           </div>
-          <Button onClick={handleAddJob} className="mt-4 md:mt-0">
-            <Plus size={18} className="mr-2" />
-            Add Job
-          </Button>
+          <div className="flex gap-3 mt-4 md:mt-0">
+            <Button onClick={handleUpgrade} variant="outline">
+              <CreditCard size={18} className="mr-2" />
+              Upgrade to Premium
+            </Button>
+            <Button onClick={handleAddJob}>
+              <Plus size={18} className="mr-2" />
+              Add Job
+            </Button>
+          </div>
         </div>
         
         {/* Stats row */}
@@ -229,68 +258,173 @@ const Dashboard = () => {
           </div>
         </div>
         
-        {/* Filters and search */}
-        <div className="flex flex-col md:flex-row gap-4 mb-6">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-            <Input
-              placeholder="Search jobs by title, company, or tags..."
-              className="pl-10"
-              value={state.filters.search}
-              onChange={handleSearchChange}
-            />
-          </div>
-          <div className="w-full md:w-48">
-            <Select
-              value={state.filters.status || 'All'}
-              onValueChange={handleStatusChange}
-            >
-              <SelectTrigger>
-                <div className="flex items-center">
-                  <Filter size={16} className="mr-2" />
-                  <SelectValue placeholder="All Statuses" />
-                </div>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="All">All Statuses</SelectItem>
-                <SelectItem value="Applied">Applied</SelectItem>
-                <SelectItem value="Interview">Interview</SelectItem>
-                <SelectItem value="Offer">Offer</SelectItem>
-                <SelectItem value="Rejected">Rejected</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        
-        {/* Job list */}
-        {state.filteredJobs.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {state.filteredJobs.map(job => (
-              <JobCard
-                key={job.id}
-                job={job}
-                onEdit={handleEditJob}
-                onDelete={handleDeleteJob}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-12 bg-gray-50 rounded-lg">
-            <Briefcase className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-4 text-lg font-medium text-gray-900">No jobs found</h3>
-            <p className="mt-2 text-gray-500">
-              {state.jobs.length === 0
-                ? "You haven't added any jobs yet. Click 'Add Job' to get started."
-                : "No jobs match your current filters. Try adjusting your search."}
-            </p>
-            {state.jobs.length === 0 && (
-              <Button onClick={handleAddJob} className="mt-4">
-                <Plus size={16} className="mr-2" />
-                Add Your First Job
-              </Button>
+        <Tabs defaultValue="jobs" value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="jobs">
+              <ListChecks size={16} className="mr-2" />
+              Job Applications
+            </TabsTrigger>
+            <TabsTrigger value="analytics">
+              <BarChart size={16} className="mr-2" />
+              Analytics
+            </TabsTrigger>
+            <TabsTrigger value="payments">
+              <CreditCard size={16} className="mr-2" />
+              Premium
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="jobs" className="space-y-4">
+            {/* Filters and search */}
+            <div className="flex flex-col md:flex-row gap-4 mb-6">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                <Input
+                  placeholder="Search jobs by title, company, or tags..."
+                  className="pl-10"
+                  value={state.filters.search}
+                  onChange={handleSearchChange}
+                />
+              </div>
+              <div className="w-full md:w-48">
+                <Select
+                  value={state.filters.status || 'All'}
+                  onValueChange={handleStatusChange}
+                >
+                  <SelectTrigger>
+                    <div className="flex items-center">
+                      <Filter size={16} className="mr-2" />
+                      <SelectValue placeholder="All Statuses" />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="All">All Statuses</SelectItem>
+                    <SelectItem value="Applied">Applied</SelectItem>
+                    <SelectItem value="Interview">Interview</SelectItem>
+                    <SelectItem value="Offer">Offer</SelectItem>
+                    <SelectItem value="Rejected">Rejected</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            {/* Job list */}
+            {state.filteredJobs.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {state.filteredJobs.map(job => (
+                  <JobCard
+                    key={job.id}
+                    job={job}
+                    onEdit={handleEditJob}
+                    onDelete={handleDeleteJob}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12 bg-gray-50 rounded-lg">
+                <Briefcase className="mx-auto h-12 w-12 text-gray-400" />
+                <h3 className="mt-4 text-lg font-medium text-gray-900">No jobs found</h3>
+                <p className="mt-2 text-gray-500">
+                  {state.jobs.length === 0
+                    ? "You haven't added any jobs yet. Click 'Add Job' to get started."
+                    : "No jobs match your current filters. Try adjusting your search."}
+                </p>
+                {state.jobs.length === 0 && (
+                  <Button onClick={handleAddJob} className="mt-4">
+                    <Plus size={16} className="mr-2" />
+                    Add Your First Job
+                  </Button>
+                )}
+              </div>
             )}
-          </div>
-        )}
+          </TabsContent>
+          
+          <TabsContent value="analytics">
+            <JobAnalytics />
+          </TabsContent>
+          
+          <TabsContent value="payments">
+            <div className="space-y-6">
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <h3 className="text-lg font-medium mb-4">Upgrade to Premium</h3>
+                <div className="flex flex-col md:flex-row gap-6">
+                  <div className="flex-1 border rounded-lg p-6">
+                    <h4 className="text-lg font-bold">Free Plan</h4>
+                    <p className="text-2xl font-bold mt-2">$0<span className="text-sm text-gray-500 font-normal">/month</span></p>
+                    <ul className="mt-4 space-y-2">
+                      <li className="flex items-center">
+                        <svg className="h-5 w-5 text-green-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        Track up to 10 jobs
+                      </li>
+                      <li className="flex items-center">
+                        <svg className="h-5 w-5 text-green-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        Basic job status tracking
+                      </li>
+                      <li className="flex items-center text-gray-500">
+                        <svg className="h-5 w-5 text-gray-400 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                        Advanced analytics
+                      </li>
+                      <li className="flex items-center text-gray-500">
+                        <svg className="h-5 w-5 text-gray-400 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                        Email reminders
+                      </li>
+                    </ul>
+                    <div className="mt-6">
+                      <Button disabled variant="outline" className="w-full">Current Plan</Button>
+                    </div>
+                  </div>
+                  
+                  <div className="flex-1 border rounded-lg p-6 bg-primary/5 border-primary/20 relative">
+                    <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-bl-lg rounded-tr-lg">
+                      RECOMMENDED
+                    </div>
+                    <h4 className="text-lg font-bold">Premium Plan</h4>
+                    <p className="text-2xl font-bold mt-2">$19.99<span className="text-sm text-gray-500 font-normal">/month</span></p>
+                    <ul className="mt-4 space-y-2">
+                      <li className="flex items-center">
+                        <svg className="h-5 w-5 text-green-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        Unlimited job tracking
+                      </li>
+                      <li className="flex items-center">
+                        <svg className="h-5 w-5 text-green-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        Advanced analytics
+                      </li>
+                      <li className="flex items-center">
+                        <svg className="h-5 w-5 text-green-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        Email reminders
+                      </li>
+                      <li className="flex items-center">
+                        <svg className="h-5 w-5 text-green-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        Priority support
+                      </li>
+                    </ul>
+                    <div className="mt-6">
+                      <Button onClick={handleUpgrade} className="w-full">Upgrade Now</Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <PaymentHistory />
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
       
       <JobForm
@@ -298,6 +432,11 @@ const Dashboard = () => {
         onClose={() => setIsJobFormOpen(false)}
         onSave={saveJob}
         editingJob={editingJob}
+      />
+      
+      <PaymentModal
+        isOpen={isPaymentModalOpen}
+        onClose={() => setIsPaymentModalOpen(false)}
       />
       
       <AlertDialog open={!!jobToDelete} onOpenChange={() => setJobToDelete(null)}>
