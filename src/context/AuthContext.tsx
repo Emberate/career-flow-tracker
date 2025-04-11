@@ -1,6 +1,5 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Linkedin } from 'lucide-react';
 
 interface User {
   email: string;
