@@ -10,7 +10,7 @@ const steps = [
   },
   {
     title: 'Add Jobs',
-    description: 'Add the positions you've applied for with all the important details.',
+    description: "Add the positions you've applied for with all the important details.",
     icon: FileEdit,
   },
   {
