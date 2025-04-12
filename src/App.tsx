@@ -12,6 +12,7 @@ import Signup from "./pages/Signup";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
+// Set up React Query client
 const queryClient = new QueryClient();
 
 const App = () => (

@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { useIsMobile } from '../hooks/use-mobile';
 
 const testimonials = [
   {
@@ -23,14 +24,16 @@ const testimonials = [
 ];
 
 const TestimonialsSection = () => {
+  const isMobile = useIsMobile();
+  
   return (
-    <section className="py-20 px-6 sm:px-10 bg-white">
+    <section className="py-20 px-6 sm:px-10 bg-black text-white">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
+          <h2 className="text-3xl md:text-4xl font-bold text-white">
             What Users Are Saying
           </h2>
-          <p className="mt-4 text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="mt-4 text-xl text-gray-300 max-w-3xl mx-auto">
             Join thousands of job seekers who have streamlined their job search process.
           </p>
         </div>
@@ -39,7 +42,7 @@ const TestimonialsSection = () => {
           {testimonials.map((testimonial, index) => (
             <div 
               key={testimonial.name}
-              className="bg-gray-50 p-6 rounded-xl border border-gray-100 animate-fade-in"
+              className="glass-card p-6 rounded-xl border border-gray-800 animate-fade-in"
               style={{ animationDelay: `${index * 100}ms` }}
             >
               <div className="flex items-center space-x-4 mb-4">
@@ -49,11 +52,11 @@ const TestimonialsSection = () => {
                   className="w-12 h-12 rounded-full"
                 />
                 <div>
-                  <h4 className="font-semibold text-gray-900">{testimonial.name}</h4>
-                  <p className="text-sm text-gray-600">{testimonial.title}</p>
+                  <h4 className="font-semibold text-white">{testimonial.name}</h4>
+                  <p className="text-sm text-gray-400">{testimonial.title}</p>
                 </div>
               </div>
-              <p className="italic text-gray-700">"{testimonial.quote}"</p>
+              <p className="italic text-gray-300">"{testimonial.quote}"</p>
             </div>
           ))}
         </div>

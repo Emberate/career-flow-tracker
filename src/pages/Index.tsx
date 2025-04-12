@@ -18,10 +18,17 @@ const Index = () => {
     if (isAuthenticated) {
       navigate('/dashboard');
     }
+    // Apply dark mode class to body for homepage
+    document.documentElement.classList.add('dark');
+    
+    return () => {
+      // Remove dark mode when leaving homepage
+      document.documentElement.classList.remove('dark');
+    };
   }, [isAuthenticated, navigate]);
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-black">
       <Navbar />
       <main className="flex-grow">
         <HeroSection />

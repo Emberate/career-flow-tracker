@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { UserPlus, FileEdit, BarChart3 } from 'lucide-react';
+import { useIsMobile } from '../hooks/use-mobile';
 
 const steps = [
   {
@@ -21,14 +22,16 @@ const steps = [
 ];
 
 const HowItWorksSection = () => {
+  const isMobile = useIsMobile();
+
   return (
-    <section id="how-it-works" className="py-20 px-6 sm:px-10 bg-gray-50">
+    <section id="how-it-works" className="py-20 px-6 sm:px-10 bg-black">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
+          <h2 className="text-3xl md:text-4xl font-bold text-white">
             How It Works
           </h2>
-          <p className="mt-4 text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="mt-4 text-xl text-gray-300 max-w-3xl mx-auto">
             Getting started is quick and easy. Be up and running in minutes.
           </p>
         </div>
@@ -40,17 +43,17 @@ const HowItWorksSection = () => {
               className="max-w-xs text-center animate-fade-in"
               style={{ animationDelay: `${index * 150}ms` }}
             >
-              <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center text-white mx-auto mb-6">
+              <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center text-blue-400 mx-auto mb-6">
                 <step.icon size={32} />
               </div>
               <div className="relative">
                 {index < steps.length - 1 && (
-                  <div className="hidden md:block absolute top-[-30px] right-[-76px] w-12 border-t-2 border-dashed border-gray-300"></div>
+                  <div className="hidden md:block absolute top-[-30px] right-[-76px] w-12 border-t-2 border-dashed border-gray-700"></div>
                 )}
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                <h3 className="text-xl font-semibold text-white mb-2">
                   {step.title}
                 </h3>
-                <p className="text-gray-600">{step.description}</p>
+                <p className="text-gray-300">{step.description}</p>
               </div>
             </div>
           ))}
