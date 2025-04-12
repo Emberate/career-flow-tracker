@@ -15,6 +15,7 @@ interface AuthContextType {
   loginWithIndeed: () => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
+  updateUserProfile: (updates: Partial<User>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -119,6 +120,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(userData);
     setIsAuthenticated(true);
   };
+  
+  const updateUserProfile = (updates: Partial<User>) => {
+    if (!user) return;
+    
+    const updatedUser = { ...user, ...updates };
+    localStorage.setItem('user', JSON.stringify(updatedUser));
+    setUser(updatedUser);
+    
+    // Also update in the users array
+    const users = JSON.parse(localStorage.getItem('users') || '[]');
+    const index = users.findIndex((u: any) => u.email === user.email);
+    if (index !== -1) {
+      users[index] = { ...users[index], ...updates };
+      localStorage.setItem('users', JSON.stringify(users));
+    }
+  };
 
   const logout = () => {
     localStorage.removeItem('user');
@@ -134,7 +151,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       loginWithLinkedIn, 
       loginWithIndeed, 
       logout, 
-      isAuthenticated 
+      isAuthenticated,
+      updateUserProfile
     }}>
       {children}
     </AuthContext.Provider>

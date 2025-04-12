@@ -1,98 +1,100 @@
 
-import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
+import React from 'react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '../context/AuthContext';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { User, LogOut, Settings } from 'lucide-react';
 
 const Navbar = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { isAuthenticated, logout } = useAuth();
-  const location = useLocation();
-  const isDashboard = location.pathname === '/dashboard';
+  const { isAuthenticated, logout, user } = useAuth();
 
   return (
-    <nav className="bg-white shadow-sm py-4 px-6 sm:px-10 sticky top-0 z-10">
-      <div className="max-w-7xl mx-auto flex justify-between items-center">
-        <Link to="/" className="text-xl font-bold text-primary flex items-center">
-          <span>CareerFlow</span>
+    <header className="border-b bg-white">
+      <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+        <Link to="/" className="text-xl font-bold text-primary">
+          CareerFlow
         </Link>
-
-        {/* Desktop Navigation */}
-        <div className="hidden md:flex items-center space-x-6">
-          {isDashboard ? (
-            <Button variant="ghost" onClick={logout}>Logout</Button>
-          ) : (
-            <>
-              {isAuthenticated ? (
-                <Link to="/dashboard">
-                  <Button variant="ghost">Dashboard</Button>
-                </Link>
-              ) : (
-                <>
-                  <Link to="/#features">
-                    <Button variant="ghost">Features</Button>
+        
+        <nav>
+          <ul className="flex items-center gap-6">
+            <li>
+              <Link to="/" className="text-gray-600 hover:text-primary">
+                Home
+              </Link>
+            </li>
+            {isAuthenticated ? (
+              <>
+                <li>
+                  <Link to="/dashboard" className="text-gray-600 hover:text-primary">
+                    Dashboard
                   </Link>
-                  <Link to="/#how-it-works">
-                    <Button variant="ghost">How It Works</Button>
-                  </Link>
+                </li>
+                <li>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-white">
+                          {user?.name?.charAt(0).toUpperCase()}
+                        </div>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56">
+                      <div className="flex items-center justify-start gap-2 p-2">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-white">
+                          {user?.name?.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="flex flex-col space-y-1 leading-none">
+                          <p className="font-medium">{user?.name}</p>
+                          <p className="text-xs text-muted-foreground">{user?.email}</p>
+                        </div>
+                      </div>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild>
+                        <Link to="/profile" className="flex items-center cursor-pointer">
+                          <User className="mr-2 h-4 w-4" />
+                          <span>My Profile</span>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to="/profile" className="flex items-center cursor-pointer">
+                          <Settings className="mr-2 h-4 w-4" />
+                          <span>Settings</span>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={logout} className="cursor-pointer">
+                        <LogOut className="mr-2 h-4 w-4" />
+                        <span>Log out</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </li>
+              </>
+            ) : (
+              <>
+                <li>
                   <Link to="/login">
-                    <Button variant="ghost">Login</Button>
+                    <Button variant="outline">Log In</Button>
                   </Link>
+                </li>
+                <li>
                   <Link to="/signup">
-                    <Button variant="default">Sign Up Free</Button>
+                    <Button>Sign Up</Button>
                   </Link>
-                </>
-              )}
-            </>
-          )}
-        </div>
-
-        {/* Mobile menu button */}
-        <div className="md:hidden">
-          <button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="text-gray-600 hover:text-gray-900 focus:outline-none"
-          >
-            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
-        </div>
+                </li>
+              </>
+            )}
+          </ul>
+        </nav>
       </div>
-
-      {/* Mobile menu */}
-      {isMenuOpen && (
-        <div className="md:hidden pt-4 pb-3 px-6 space-y-3 animate-fade-in">
-          {isDashboard ? (
-            <Button variant="ghost" className="w-full justify-start" onClick={logout}>
-              Logout
-            </Button>
-          ) : (
-            <>
-              {isAuthenticated ? (
-                <Link to="/dashboard" onClick={() => setIsMenuOpen(false)}>
-                  <Button variant="ghost" className="w-full justify-start">Dashboard</Button>
-                </Link>
-              ) : (
-                <>
-                  <Link to="/#features" onClick={() => setIsMenuOpen(false)}>
-                    <Button variant="ghost" className="w-full justify-start">Features</Button>
-                  </Link>
-                  <Link to="/#how-it-works" onClick={() => setIsMenuOpen(false)}>
-                    <Button variant="ghost" className="w-full justify-start">How It Works</Button>
-                  </Link>
-                  <Link to="/login" onClick={() => setIsMenuOpen(false)}>
-                    <Button variant="ghost" className="w-full justify-start">Login</Button>
-                  </Link>
-                  <Link to="/signup" onClick={() => setIsMenuOpen(false)}>
-                    <Button variant="default" className="w-full">Sign Up Free</Button>
-                  </Link>
-                </>
-              )}
-            </>
-          )}
-        </div>
-      )}
-    </nav>
+    </header>
   );
 };
 
