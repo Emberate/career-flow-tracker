@@ -20,8 +20,9 @@ const Footer = () => {
           <div>
             <h4 className="font-semibold text-white mb-4">Product</h4>
             <ul className="space-y-2">
-              <li><Link to="/#features" className="text-gray-400 hover:text-white">Features</Link></li>
-              <li><Link to="/#how-it-works" className="text-gray-400 hover:text-white">How It Works</Link></li>
+              <li><Link to="/product" className="text-gray-400 hover:text-white">Overview</Link></li>
+              <li><Link to="/features" className="text-gray-400 hover:text-white">Features</Link></li>
+              <li><Link to="/how-it-works" className="text-gray-400 hover:text-white">How It Works</Link></li>
               <li><Link to="/pricing" className="text-gray-400 hover:text-white">Pricing</Link></li>
             </ul>
           </div>
@@ -32,6 +33,7 @@ const Footer = () => {
               <li><Link to="/help" className="text-gray-400 hover:text-white">Help Center</Link></li>
               <li><Link to="/contact" className="text-gray-400 hover:text-white">Contact Us</Link></li>
               <li><Link to="/faq" className="text-gray-400 hover:text-white">FAQs</Link></li>
+              <li><Link to="/support" className="text-gray-400 hover:text-white">Support Overview</Link></li>
             </ul>
           </div>
           
