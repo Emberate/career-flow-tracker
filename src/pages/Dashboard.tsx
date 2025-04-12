@@ -5,8 +5,14 @@ import { useAuth } from '../context/AuthContext';
 import { Job, JobState } from '../types';
 import JobCard from '../components/JobCard';
 import JobForm from '../components/JobForm';
-import Navbar from '../components/Navbar';
+import PageLayout from '../components/PageLayout';
+import PageHeader from '../components/PageHeader';
 import JobAnalytics from '../components/JobAnalytics';
+import InterviewCalendar from '../components/InterviewCalendar';
+import CompanyResearch from '../components/CompanyResearch';
+import SuccessMetrics from '../components/SuccessMetrics';
+import InterviewQA from '../components/InterviewQA';
+import Reminders from '../components/Reminders';
 import PaymentHistory from '../components/PaymentHistory';
 import PaymentModal from '../components/PaymentModal';
 import { Button } from '@/components/ui/button';
@@ -41,7 +47,12 @@ import {
   Briefcase, 
   CreditCard,
   BarChart,
-  ListChecks
+  ListChecks,
+  Calendar,
+  Building,
+  TrendingUp,
+  MessageSquare,
+  Bell
 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -212,12 +223,17 @@ const Dashboard = () => {
   const rejectedJobs = state.jobs.filter(j => j.status === 'Rejected').length;
   
   return (
-    <>
-      <Navbar />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <PageLayout title="Dashboard" className="bg-gray-50">
+      <PageHeader 
+        title="Job Tracker Dashboard" 
+        subtitle="Track, manage, and analyze your job applications" 
+        centered={false} 
+      />
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12 -mt-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">My Job Tracker</h1>
+            <h2 className="text-xl font-bold text-gray-900">My Job Tracker</h2>
             <p className="text-gray-600 mt-1">
               {user?.name ? `Welcome, ${user.name}` : 'Track and manage your job applications'}
             </p>
@@ -259,7 +275,7 @@ const Dashboard = () => {
         </div>
         
         <Tabs defaultValue="jobs" value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList>
+          <TabsList className="bg-white border">
             <TabsTrigger value="jobs">
               <ListChecks size={16} className="mr-2" />
               Job Applications
@@ -268,7 +284,27 @@ const Dashboard = () => {
               <BarChart size={16} className="mr-2" />
               Analytics
             </TabsTrigger>
-            <TabsTrigger value="payments">
+            <TabsTrigger value="calendar">
+              <Calendar size={16} className="mr-2" />
+              Interviews
+            </TabsTrigger>
+            <TabsTrigger value="reminders">
+              <Bell size={16} className="mr-2" />
+              Reminders
+            </TabsTrigger>
+            <TabsTrigger value="research">
+              <Building size={16} className="mr-2" />
+              Research
+            </TabsTrigger>
+            <TabsTrigger value="metrics">
+              <TrendingUp size={16} className="mr-2" />
+              Success Metrics
+            </TabsTrigger>
+            <TabsTrigger value="interview-qa">
+              <MessageSquare size={16} className="mr-2" />
+              Interview Q&A
+            </TabsTrigger>
+            <TabsTrigger value="premium">
               <CreditCard size={16} className="mr-2" />
               Premium
             </TabsTrigger>
@@ -321,7 +357,7 @@ const Dashboard = () => {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-12 bg-gray-50 rounded-lg">
+              <div className="text-center py-12 bg-white rounded-lg">
                 <Briefcase className="mx-auto h-12 w-12 text-gray-400" />
                 <h3 className="mt-4 text-lg font-medium text-gray-900">No jobs found</h3>
                 <p className="mt-2 text-gray-500">
@@ -343,7 +379,27 @@ const Dashboard = () => {
             <JobAnalytics />
           </TabsContent>
           
-          <TabsContent value="payments">
+          <TabsContent value="calendar">
+            <InterviewCalendar />
+          </TabsContent>
+          
+          <TabsContent value="reminders">
+            <Reminders />
+          </TabsContent>
+          
+          <TabsContent value="research">
+            <CompanyResearch />
+          </TabsContent>
+          
+          <TabsContent value="metrics">
+            <SuccessMetrics />
+          </TabsContent>
+          
+          <TabsContent value="interview-qa">
+            <InterviewQA />
+          </TabsContent>
+          
+          <TabsContent value="premium">
             <div className="space-y-6">
               <div className="bg-white rounded-lg shadow-sm p-6">
                 <h3 className="text-lg font-medium mb-4">Upgrade to Premium</h3>
@@ -456,7 +512,7 @@ const Dashboard = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+    </PageLayout>
   );
 };
 
