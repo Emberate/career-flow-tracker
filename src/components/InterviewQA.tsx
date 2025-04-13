@@ -12,27 +12,27 @@ const commonQuestions = [
   {
     id: 'q1',
     question: 'Tell me about yourself',
-    answer: 'Start with your current role, then briefly explain your background and experience relevant to the position. Highlight key achievements and skills, and end with why you're interested in this specific role and company.'
+    answer: "Start with your current role, then briefly explain your background and experience relevant to the position. Highlight key achievements and skills, and end with why you're interested in this specific role and company."
   },
   {
     id: 'q2',
     question: 'What is your greatest strength?',
-    answer: 'Choose a strength that aligns with the job requirements. Provide specific examples of how you've demonstrated this strength in past roles, and explain how it would benefit the company in this new position.'
+    answer: "Choose a strength that aligns with the job requirements. Provide specific examples of how you've demonstrated this strength in past roles, and explain how it would benefit the company in this new position."
   },
   {
     id: 'q3',
     question: 'What is your greatest weakness?',
-    answer: 'Select a genuine but not critical weakness, and focus on the steps you're taking to improve in this area. Show self-awareness and a commitment to professional growth.'
+    answer: "Select a genuine but not critical weakness, and focus on the steps you're taking to improve in this area. Show self-awareness and a commitment to professional growth."
   },
   {
     id: 'q4',
     question: 'Why do you want to work here?',
-    answer: 'Research the company beforehand. Mention specific aspects of the company's mission, values, products, or culture that appeal to you, and explain how your skills and goals align with the organization.'
+    answer: "Research the company beforehand. Mention specific aspects of the company's mission, values, products, or culture that appeal to you, and explain how your skills and goals align with the organization."
   },
   {
     id: 'q5',
     question: 'Where do you see yourself in five years?',
-    answer: 'Discuss your career aspirations related to the role and industry. Show ambition while being realistic, and emphasize your commitment to growing with the company long-term if that's your intention.'
+    answer: "Discuss your career aspirations related to the role and industry. Show ambition while being realistic, and emphasize your commitment to growing with the company long-term if that's your intention."
   }
 ];
 
