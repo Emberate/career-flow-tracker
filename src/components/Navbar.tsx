@@ -19,7 +19,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { User, LogOut, Settings, Menu, X, ChevronDown } from 'lucide-react';
+import { User, LogOut, Settings, Menu, X, ChevronDown, BookOpen } from 'lucide-react';
 
 const Navbar = () => {
   const { isAuthenticated, logout, user } = useAuth();
@@ -73,6 +73,13 @@ const Navbar = () => {
                       <Link to="/pricing" className="text-gray-600 dark:text-gray-300 hover:text-primary block py-2"
                         onClick={() => setIsMenuOpen(false)}>
                         Pricing
+                      </Link>
+                    </li>
+                    <li>
+                      <Link to="/documentation" className="text-gray-600 dark:text-gray-300 hover:text-primary block py-2"
+                        onClick={() => setIsMenuOpen(false)}>
+                        <BookOpen className="h-4 w-4 inline mr-1" />
+                        Documentation
                       </Link>
                     </li>
                     <li>
@@ -204,6 +211,12 @@ const Navbar = () => {
               <li>
                 <Link to="/pricing" className="text-gray-600 dark:text-gray-300 hover:text-primary">
                   Pricing
+                </Link>
+              </li>
+              <li>
+                <Link to="/documentation" className="text-gray-600 dark:text-gray-300 hover:text-primary flex items-center">
+                  <BookOpen className="h-4 w-4 mr-1" />
+                  Documentation
                 </Link>
               </li>
               {isAuthenticated ? (

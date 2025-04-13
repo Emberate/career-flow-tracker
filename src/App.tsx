@@ -13,12 +13,13 @@ import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import Product from "./pages/Product";
 import Features from "./pages/Features";
-import HowItWorks from "./pages/HowItWorks";
+import HowItWorksSection from "./pages/HowItWorks";
 import Pricing from "./pages/Pricing";
 import Support from "./pages/Support";
 import HelpCenter from "./pages/HelpCenter";
 import Contact from "./pages/Contact";
 import FAQ from "./pages/FAQ";
+import Documentation from "./pages/Documentation";
 
 // Set up React Query client
 const queryClient = new QueryClient();
@@ -44,6 +45,7 @@ const App = () => (
             <Route path="/help" element={<HelpCenter />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/faq" element={<FAQ />} />
+            <Route path="/documentation" element={<Documentation />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
