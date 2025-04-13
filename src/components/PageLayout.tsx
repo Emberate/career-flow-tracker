@@ -26,7 +26,7 @@ const PageLayout = ({ children, title, className = '' }: PageLayoutProps) => {
   }, [title]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-black overflow-x-hidden">
+    <div className="min-h-screen flex flex-col overflow-x-hidden transition-colors duration-200 ease-in-out">
       <Navbar />
       <main className={`flex-grow ${className}`}>
         {children}

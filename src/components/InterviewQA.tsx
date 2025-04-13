@@ -116,8 +116,8 @@ const InterviewQA = () => {
   );
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6">
-      <h3 className="text-lg font-medium mb-4">Interview Q&A</h3>
+    <div className="dashboard-card bg-white rounded-lg shadow-sm p-6">
+      <h3 className="text-lg font-medium mb-4 dashboard-text">Interview Q&A</h3>
       
       <div className="mb-6">
         <div className="relative">
@@ -147,24 +147,24 @@ const InterviewQA = () => {
           <div className="space-y-4">
             {filteredCommonQuestions.length > 0 ? (
               filteredCommonQuestions.map(q => (
-                <Card key={q.id}>
+                <Card key={q.id} className="dashboard-card">
                   <CardHeader>
-                    <CardTitle className="text-base">{q.question}</CardTitle>
+                    <CardTitle className="text-base dashboard-text">{q.question}</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm text-gray-700">{q.answer}</p>
+                    <p className="text-sm text-gray-700 dashboard-text">{q.answer}</p>
                   </CardContent>
                 </Card>
               ))
             ) : (
-              <p className="text-center py-4 text-gray-500">No questions match your search</p>
+              <p className="text-center py-4 text-gray-500 dashboard-text">No questions match your search</p>
             )}
           </div>
         </TabsContent>
         
         <TabsContent value="my">
-          <div className="mb-6 border p-4 rounded-lg">
-            <h4 className="font-medium mb-2">
+          <div className="mb-6 border p-4 rounded-lg dashboard-card">
+            <h4 className="font-medium mb-2 dashboard-text">
               {editingQuestion ? 'Edit Question' : 'Add New Question'}
             </h4>
             <div className="space-y-3">
@@ -205,12 +205,12 @@ const InterviewQA = () => {
           <div className="space-y-4">
             {filteredUserQuestions.length > 0 ? (
               filteredUserQuestions.map(q => (
-                <Card key={q.id}>
+                <Card key={q.id} className="dashboard-card">
                   <CardHeader>
-                    <CardTitle className="text-base">{q.question}</CardTitle>
+                    <CardTitle className="text-base dashboard-text">{q.question}</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm text-gray-700">{q.answer}</p>
+                    <p className="text-sm text-gray-700 dashboard-text">{q.answer}</p>
                   </CardContent>
                   <CardFooter className="flex justify-end gap-2">
                     <Button variant="outline" size="sm" onClick={() => handleEditQuestion(q)}>
@@ -225,8 +225,8 @@ const InterviewQA = () => {
             ) : (
               <div className="text-center py-10 text-gray-500">
                 <MessageSquare className="mx-auto h-12 w-12 text-gray-400 mb-2" />
-                <p className="mb-2">You haven't added any questions yet</p>
-                <p className="text-sm">Add your own interview questions and answer templates</p>
+                <p className="mb-2 dashboard-text">You haven't added any questions yet</p>
+                <p className="text-sm dashboard-text">Add your own interview questions and answer templates</p>
               </div>
             )}
           </div>

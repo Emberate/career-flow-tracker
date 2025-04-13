@@ -15,6 +15,7 @@ import InterviewQA from '../components/InterviewQA';
 import Reminders from '../components/Reminders';
 import PaymentHistory from '../components/PaymentHistory';
 import PaymentModal from '../components/PaymentModal';
+import ThemeSwitcher from '../components/ThemeSwitcher';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -230,15 +231,16 @@ const Dashboard = () => {
         centered={false} 
       />
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12 -mt-8">
+      <div id="dashboard-container" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12 -mt-8 bg-gray-50">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
           <div>
-            <h2 className="text-xl font-bold text-gray-900">My Job Tracker</h2>
-            <p className="text-gray-600 mt-1">
+            <h2 className="text-xl font-bold text-gray-900 dashboard-text">My Job Tracker</h2>
+            <p className="text-gray-600 mt-1 dashboard-text">
               {user?.name ? `Welcome, ${user.name}` : 'Track and manage your job applications'}
             </p>
           </div>
           <div className="flex gap-3 mt-4 md:mt-0">
+            <ThemeSwitcher />
             <Button onClick={handleUpgrade} variant="outline">
               <CreditCard size={18} className="mr-2" />
               Upgrade to Premium
@@ -252,30 +254,30 @@ const Dashboard = () => {
         
         {/* Stats row */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-            <p className="text-gray-600 text-sm">Total</p>
-            <p className="text-2xl font-bold">{totalJobs}</p>
+          <div className="dashboard-card bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+            <p className="text-gray-600 text-sm dashboard-text">Total</p>
+            <p className="text-2xl font-bold dashboard-text">{totalJobs}</p>
           </div>
-          <div className="bg-blue-50 p-4 rounded-lg shadow-sm border border-blue-100">
+          <div className="dashboard-card bg-blue-50 p-4 rounded-lg shadow-sm border border-blue-100">
             <p className="text-blue-700 text-sm">Applied</p>
             <p className="text-2xl font-bold text-blue-700">{appliedJobs}</p>
           </div>
-          <div className="bg-yellow-50 p-4 rounded-lg shadow-sm border border-yellow-100">
+          <div className="dashboard-card bg-yellow-50 p-4 rounded-lg shadow-sm border border-yellow-100">
             <p className="text-yellow-700 text-sm">Interviewing</p>
             <p className="text-2xl font-bold text-yellow-700">{interviewJobs}</p>
           </div>
-          <div className="bg-green-50 p-4 rounded-lg shadow-sm border border-green-100">
+          <div className="dashboard-card bg-green-50 p-4 rounded-lg shadow-sm border border-green-100">
             <p className="text-green-700 text-sm">Offers</p>
             <p className="text-2xl font-bold text-green-700">{offerJobs}</p>
           </div>
-          <div className="bg-red-50 p-4 rounded-lg shadow-sm border border-red-100">
+          <div className="dashboard-card bg-red-50 p-4 rounded-lg shadow-sm border border-red-100">
             <p className="text-red-700 text-sm">Rejected</p>
             <p className="text-2xl font-bold text-red-700">{rejectedJobs}</p>
           </div>
         </div>
         
         <Tabs defaultValue="jobs" value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList className="bg-white border">
+          <TabsList className="dashboard-card bg-white border">
             <TabsTrigger value="jobs">
               <ListChecks size={16} className="mr-2" />
               Job Applications
