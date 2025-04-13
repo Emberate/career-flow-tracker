@@ -29,6 +29,13 @@ const themes: ThemeOption[] = [
     text: 'text-white'
   },
   {
+    name: 'Black',
+    primary: 'bg-gray-800',
+    background: 'bg-black',
+    card: 'bg-gray-900',
+    text: 'text-white'
+  },
+  {
     name: 'Purple',
     primary: 'bg-purple-600',
     background: 'bg-purple-50',
@@ -53,7 +60,7 @@ const themes: ThemeOption[] = [
 
 const ThemeSwitcher = () => {
   const { toast } = useToast();
-  const [currentTheme, setCurrentTheme] = useState<string>('Light');
+  const [currentTheme, setCurrentTheme] = useState<string>('Black');
   
   useEffect(() => {
     // Load saved theme preference from localStorage
@@ -61,6 +68,10 @@ const ThemeSwitcher = () => {
     if (savedTheme) {
       setCurrentTheme(savedTheme);
       applyTheme(savedTheme);
+    } else {
+      // Default to Black theme if no preference is saved
+      setCurrentTheme('Black');
+      applyTheme('Black');
     }
   }, []);
   
@@ -72,11 +83,29 @@ const ThemeSwitcher = () => {
     const dashboardElement = document.getElementById('dashboard-container');
     
     if (dashboardElement) {
-      if (themeName === 'Dark') {
-        dashboardElement.classList.remove('bg-gray-50', 'bg-purple-50', 'bg-emerald-50', 'bg-indigo-50');
+      // Remove all theme classes first
+      dashboardElement.classList.remove(
+        'bg-gray-50', 'bg-gray-900', 'bg-black', 
+        'bg-purple-50', 'bg-emerald-50', 'bg-indigo-50'
+      );
+      
+      if (themeName === 'Black') {
+        dashboardElement.classList.add('bg-black');
+        document.querySelectorAll('.dashboard-card').forEach(card => {
+          card.classList.remove('bg-white', 'bg-gray-800');
+          card.classList.add('bg-gray-900', 'text-white', 'border-gray-800');
+        });
+        document.querySelectorAll('.dashboard-text').forEach(text => {
+          text.classList.remove('text-gray-900', 'text-gray-600');
+          text.classList.add('text-white', 'text-gray-300');
+        });
+        document.querySelectorAll('.calendar-day').forEach(day => {
+          day.classList.add('text-white');
+        });
+      } else if (themeName === 'Dark') {
         dashboardElement.classList.add('bg-gray-900');
         document.querySelectorAll('.dashboard-card').forEach(card => {
-          card.classList.remove('bg-white');
+          card.classList.remove('bg-white', 'bg-gray-900');
           card.classList.add('bg-gray-800', 'text-white', 'border-gray-700');
         });
         document.querySelectorAll('.dashboard-text').forEach(text => {
@@ -85,7 +114,7 @@ const ThemeSwitcher = () => {
         });
       } else {
         // Remove dark theme classes
-        dashboardElement.classList.remove('bg-gray-900');
+        dashboardElement.classList.remove('bg-gray-900', 'bg-black');
         if (themeName === 'Purple') {
           dashboardElement.classList.remove('bg-gray-50', 'bg-emerald-50', 'bg-indigo-50');
           dashboardElement.classList.add('bg-purple-50');
@@ -101,7 +130,7 @@ const ThemeSwitcher = () => {
         }
         
         document.querySelectorAll('.dashboard-card').forEach(card => {
-          card.classList.remove('bg-gray-800', 'text-white', 'border-gray-700');
+          card.classList.remove('bg-gray-800', 'bg-gray-900', 'text-white', 'border-gray-700', 'border-gray-800');
           card.classList.add('bg-white');
         });
         

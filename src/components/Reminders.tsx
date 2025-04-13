@@ -107,9 +107,9 @@ const Reminders = () => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6">
+    <div className="dashboard-card bg-gray-900 rounded-lg shadow-sm p-6">
       <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-medium">Reminders</h3>
+        <h3 className="text-lg font-medium dashboard-text">Reminders</h3>
         <Button variant="outline" size="sm" onClick={() => setShowCompleted(!showCompleted)}>
           {showCompleted ? 'Hide Completed' : 'Show Completed'}
         </Button>
@@ -117,12 +117,12 @@ const Reminders = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <h4 className="font-medium mb-4">Add New Reminder</h4>
-          <Card>
+          <h4 className="font-medium mb-4 dashboard-text">Add New Reminder</h4>
+          <Card className="dashboard-card bg-gray-900 border-gray-800">
             <CardContent className="pt-6 pb-4">
               <div className="space-y-4">
                 <div>
-                  <label htmlFor="job" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="job" className="block text-sm font-medium dashboard-text mb-1">
                     Select Job
                   </label>
                   <select
@@ -141,7 +141,7 @@ const Reminders = () => {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium dashboard-text mb-1">
                     Reminder Date
                   </label>
                   <Popover>
@@ -157,19 +157,20 @@ const Reminders = () => {
                         {selectedDate ? format(selectedDate, "PPP") : <span>Pick a date</span>}
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0">
+                    <PopoverContent className="w-auto p-0 bg-gray-900 calendar-container">
                       <Calendar
                         mode="single"
                         selected={selectedDate}
                         onSelect={setSelectedDate}
                         initialFocus
+                        className="calendar-dark"
                       />
                     </PopoverContent>
                   </Popover>
                 </div>
                 
                 <div>
-                  <label htmlFor="note" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="note" className="block text-sm font-medium dashboard-text mb-1">
                     Reminder Note
                   </label>
                   <Input
@@ -177,6 +178,7 @@ const Reminders = () => {
                     value={reminderNote}
                     onChange={(e) => setReminderNote(e.target.value)}
                     placeholder="E.g., Follow up on application, prepare for interview, etc."
+                    className="bg-gray-800 text-white border-gray-700"
                   />
                 </div>
               </div>
@@ -190,28 +192,28 @@ const Reminders = () => {
         </div>
         
         <div>
-          <h4 className="font-medium mb-4">Upcoming Reminders</h4>
+          <h4 className="font-medium mb-4 dashboard-text">Upcoming Reminders</h4>
           <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
             {filteredReminders.length > 0 ? (
               filteredReminders.map(reminder => (
-                <Card key={reminder.id} className={cn(reminder.completed && "opacity-60")}>
+                <Card key={reminder.id} className={cn("dashboard-card bg-gray-900 border-gray-800", reminder.completed && "opacity-60")}>
                   <CardHeader className="py-3 px-4">
                     <div className="flex justify-between items-start">
-                      <CardTitle className="text-base">{reminder.jobTitle}</CardTitle>
+                      <CardTitle className="text-base dashboard-text">{reminder.jobTitle}</CardTitle>
                       <Badge variant={reminder.completed ? "outline" : "default"} className="ml-2">
                         {format(new Date(reminder.date), "MMM d")}
                       </Badge>
                     </div>
-                    <p className="text-sm text-gray-500 mt-0">{reminder.company}</p>
+                    <p className="text-sm text-gray-400 mt-0">{reminder.company}</p>
                   </CardHeader>
                   <CardContent className="py-0 px-4">
-                    <p className="text-sm">{reminder.note}</p>
+                    <p className="text-sm dashboard-text">{reminder.note}</p>
                   </CardContent>
                   <CardFooter className="py-2 px-4 flex justify-end gap-2">
                     <Button
                       variant="outline"
                       size="sm"
-                      className={cn(reminder.completed && "bg-green-50")}
+                      className={cn(reminder.completed && "bg-green-900")}
                       onClick={() => handleToggleComplete(reminder.id)}
                     >
                       <CheckCircle2 size={14} className={cn("mr-1", reminder.completed && "text-green-500")} />
@@ -220,7 +222,7 @@ const Reminders = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="text-red-600"
+                      className="text-red-500"
                       onClick={() => handleDeleteReminder(reminder.id)}
                     >
                       <Trash size={14} className="mr-1" />
@@ -230,8 +232,8 @@ const Reminders = () => {
                 </Card>
               ))
             ) : (
-              <div className="text-center py-8 text-gray-500">
-                <Bell className="mx-auto h-12 w-12 text-gray-400 mb-2" />
+              <div className="text-center py-8 text-gray-400">
+                <Bell className="mx-auto h-12 w-12 text-gray-500 mb-2" />
                 <p className="mb-2">No reminders</p>
                 <p className="text-sm">
                   {showCompleted 

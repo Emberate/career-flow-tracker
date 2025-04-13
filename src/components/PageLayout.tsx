@@ -16,6 +16,7 @@ const PageLayout = ({ children, title, className = '' }: PageLayoutProps) => {
     
     // Apply dark mode class to body
     document.documentElement.classList.add('dark');
+    document.body.style.backgroundColor = '#111';
     
     // Scroll to top on page load
     window.scrollTo(0, 0);
@@ -26,7 +27,7 @@ const PageLayout = ({ children, title, className = '' }: PageLayoutProps) => {
   }, [title]);
 
   return (
-    <div className="min-h-screen flex flex-col overflow-x-hidden transition-colors duration-200 ease-in-out">
+    <div className="min-h-screen flex flex-col overflow-x-hidden transition-colors duration-200 ease-in-out bg-black text-white">
       <Navbar />
       <main className={`flex-grow ${className}`}>
         {children}
