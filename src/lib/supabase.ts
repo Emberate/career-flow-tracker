@@ -3,8 +3,9 @@ import { createClient } from '@supabase/supabase-js';
 
 // Hard-coded fallback values for development purposes only
 // Replace these with your actual Supabase URL and anon key
-const FALLBACK_URL = 'https://your-project-url.supabase.co';
-const FALLBACK_KEY = 'your-anon-key';
+const FALLBACK_URL = 'https://umgvcprfekjcshaujxua.supabase.co';
+const FALLBACK_KEY = 'https://umgvcprfekjcshaujxua.supabase.co
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVtZ3ZjcHJmZWtqY3NoYXVqeHVhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ2MDQwMjMsImV4cCI6MjA2MDE4MDAyM30.0u3C55ZzrFmzxArsUMkeBx3cO3rWPkdWsmu3Va9tjXQ';
 
 // Try to get environment variables
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || FALLBACK_URL;
