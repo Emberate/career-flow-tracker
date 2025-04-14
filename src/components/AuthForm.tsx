@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
 import { Separator } from '@/components/ui/separator';
-import { Linkedin, Briefcase, Mail } from 'lucide-react';
+import { Linkedin, Briefcase, Mail, AlertTriangle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 interface AuthFormProps {
   type: 'login' | 'signup';
@@ -18,12 +20,43 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
   const [name, setName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [socialLoading, setSocialLoading] = useState<string | null>(null);
+  const [supabaseConfigured, setSupabaseConfigured] = useState(true);
   const { login, signup, loginWithLinkedIn, loginWithIndeed } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Check if Supabase is properly configured
+  useEffect(() => {
+    const checkSupabaseConfig = async () => {
+      try {
+        // Simple health check to see if we can connect to Supabase
+        const { error } = await supabase.from('profiles').select('count', { count: 'exact', head: true });
+        
+        // If we get a "Failed to fetch" error or URL is still the fallback, mark as not configured
+        if (error && (error.message.includes('Failed to fetch') || error.message.includes('fetch failed'))) {
+          setSupabaseConfigured(false);
+        }
+      } catch (error) {
+        console.error('Supabase connection check error:', error);
+        setSupabaseConfigured(false);
+      }
+    };
+
+    checkSupabaseConfig();
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!supabaseConfigured) {
+      toast({
+        title: "Configuration Error",
+        description: "Supabase is not properly configured. Please update your configuration.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsLoading(true);
 
     try {
@@ -54,6 +87,15 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
   };
 
   const handleLinkedInLogin = async () => {
+    if (!supabaseConfigured) {
+      toast({
+        title: "Configuration Error",
+        description: "Supabase is not properly configured. Please update your configuration.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setSocialLoading('linkedin');
     try {
       await loginWithLinkedIn();
@@ -75,6 +117,15 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
   };
 
   const handleIndeedLogin = async () => {
+    if (!supabaseConfigured) {
+      toast({
+        title: "Configuration Error",
+        description: "Supabase is not properly configured. Please update your configuration.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setSocialLoading('indeed');
     try {
       await loginWithIndeed();
@@ -100,6 +151,16 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
       <h2 className="text-2xl font-bold text-center mb-6">
         {type === 'login' ? 'Log In to Your Account' : 'Create Your Account'}
       </h2>
+      
+      {!supabaseConfigured && (
+        <Alert variant="destructive" className="mb-6">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Configuration Error</AlertTitle>
+          <AlertDescription>
+            Supabase is not properly configured. Please update the Supabase URL and anon key in the project.
+          </AlertDescription>
+        </Alert>
+      )}
       
       {/* Social Login Buttons */}
       <div className="space-y-3 mb-6">

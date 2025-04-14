@@ -19,3 +19,8 @@ if (supabaseUrl === FALLBACK_URL || supabaseAnonKey === FALLBACK_KEY) {
 
 // Create a single supabase client for the entire app
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+// Helper function to check if Supabase is properly configured
+export const isSupabaseConfigured = () => {
+  return supabaseUrl !== FALLBACK_URL && supabaseAnonKey !== FALLBACK_KEY;
+};
