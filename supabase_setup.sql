@@ -1,5 +1,8 @@
 
--- Run this in your Supabase SQL Editor to create the necessary stored procedure and table
+-- Run this in your Supabase SQL Editor to create the necessary stored procedures and table
+
+-- Create extension for UUID generation if it doesn't exist
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- Create the stored procedure to create the jobs table if it doesn't exist
 CREATE OR REPLACE FUNCTION create_jobs_table()
@@ -16,7 +19,7 @@ BEGIN
   ) THEN
     -- Create the jobs table
     CREATE TABLE public.jobs (
-      id UUID PRIMARY KEY DEFAULT uuid_generate_extension(),
+      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
       user_id UUID NOT NULL,
       title TEXT NOT NULL,
       company TEXT NOT NULL,
@@ -52,10 +55,22 @@ BEGIN
 END;
 $$;
 
--- Ensure the uuid-ossp extension is available
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+-- Create a general purpose SQL execution function (use with caution in production)
+CREATE OR REPLACE FUNCTION execute_sql(sql_query TEXT)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  EXECUTE sql_query;
+END;
+$$;
 
 -- Grant necessary permissions
 GRANT EXECUTE ON FUNCTION create_jobs_table() TO anon;
 GRANT EXECUTE ON FUNCTION create_jobs_table() TO authenticated;
 GRANT EXECUTE ON FUNCTION create_jobs_table() TO service_role;
+
+GRANT EXECUTE ON FUNCTION execute_sql(TEXT) TO anon;
+GRANT EXECUTE ON FUNCTION execute_sql(TEXT) TO authenticated;
+GRANT EXECUTE ON FUNCTION execute_sql(TEXT) TO service_role;

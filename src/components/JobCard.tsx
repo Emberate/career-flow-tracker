@@ -11,6 +11,7 @@ import {
   ExternalLink
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { useToast } from '@/components/ui/use-toast';
 
 interface JobCardProps {
   job: Job;
@@ -34,9 +35,31 @@ const getStatusColor = (status: string) => {
 };
 
 const JobCard: React.FC<JobCardProps> = ({ job, onEdit, onDelete }) => {
+  const { toast } = useToast();
   const statusClass = getStatusColor(job.status);
   const applied = new Date(job.dateApplied);
   const timeAgo = formatDistanceToNow(applied, { addSuffix: true });
+
+  const handleDelete = () => {
+    try {
+      if (!job.id) {
+        toast({
+          title: "Error",
+          description: "Job ID is missing. Cannot delete.",
+          variant: "destructive",
+        });
+        return;
+      }
+      onDelete(job.id);
+    } catch (error) {
+      console.error("Error in delete handler:", error);
+      toast({
+        title: "Error",
+        description: "Failed to process delete request.",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden">
@@ -76,7 +99,7 @@ const JobCard: React.FC<JobCardProps> = ({ job, onEdit, onDelete }) => {
             <Button 
               variant="outline" 
               size="sm" 
-              onClick={() => onDelete(job.id)}
+              onClick={handleDelete}
               className="text-red-600 hover:bg-red-50 hover:text-red-700"
             >
               <Trash2 size={16} className="mr-1" />

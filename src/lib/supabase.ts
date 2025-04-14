@@ -30,22 +30,73 @@ export const ensureJobsTable = async (userId: string) => {
     
     // If the table doesn't exist, create it
     if (tableCheckError && tableCheckError.code === '42P01') {
-      // Create the jobs table with the necessary columns
-      const { error: createTableError } = await supabase.rpc('create_jobs_table');
+      console.log('Jobs table does not exist, creating...');
       
-      if (createTableError) {
-        console.error('Error creating jobs table:', createTableError);
+      // Execute a direct SQL query to create the jobs table
+      const { error: sqlError } = await supabase.rpc('create_jobs_table');
+      
+      if (sqlError) {
+        console.error('Error creating jobs table:', sqlError);
         
-        // Attempt to load from localStorage as fallback
-        return false;
+        // Try an alternative approach with direct SQL if RPC fails
+        const { error: directSqlError } = await supabase.rpc('execute_sql', {
+          sql_query: `
+            CREATE TABLE IF NOT EXISTS public.jobs (
+              id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+              user_id UUID NOT NULL,
+              title TEXT NOT NULL,
+              company TEXT NOT NULL,
+              dateApplied TEXT NOT NULL,
+              status TEXT NOT NULL,
+              notes TEXT,
+              jobLink TEXT,
+              resumeLink TEXT,
+              coverLetterLink TEXT,
+              companyNotes TEXT,
+              interviewDate TEXT,
+              interviewNotes TEXT,
+              reminderDate TEXT,
+              reminderNote TEXT,
+              tags TEXT[] DEFAULT '{}',
+              questions JSONB DEFAULT '[]',
+              created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+              updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+            );
+            
+            ALTER TABLE public.jobs ENABLE ROW LEVEL SECURITY;
+            
+            CREATE POLICY "Users can only access their own jobs"
+              ON public.jobs
+              FOR ALL
+              USING (auth.uid() = user_id);
+              
+            CREATE INDEX IF NOT EXISTS jobs_user_id_idx ON public.jobs (user_id);
+          `
+        });
+        
+        if (directSqlError) {
+          console.error('Error with direct SQL creation:', directSqlError);
+          return false;
+        }
       }
       
+      console.log('Jobs table created successfully');
       return true;
     }
     
+    console.log('Jobs table exists');
     return true;
   } catch (error) {
     console.error('Error ensuring jobs table exists:', error);
     return false;
   }
+};
+
+// Helper function to fix UUID generation issues
+export const fixJobsUuid = async (job: any) => {
+  // Make sure we're using a proper UUID
+  if (!job.id || job.id.length < 32) {
+    job.id = crypto.randomUUID();
+  }
+  return job;
 };
