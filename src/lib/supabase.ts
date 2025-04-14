@@ -19,3 +19,33 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 export const isSupabaseConfigured = () => {
   return supabaseUrl !== FALLBACK_URL && supabaseAnonKey !== FALLBACK_KEY;
 };
+
+// Helper function to ensure the jobs table exists
+export const ensureJobsTable = async (userId: string) => {
+  try {
+    // First, check if the jobs table exists
+    const { error: tableCheckError } = await supabase
+      .from('jobs')
+      .select('id', { count: 'exact', head: true });
+    
+    // If the table doesn't exist, create it
+    if (tableCheckError && tableCheckError.code === '42P01') {
+      // Create the jobs table with the necessary columns
+      const { error: createTableError } = await supabase.rpc('create_jobs_table');
+      
+      if (createTableError) {
+        console.error('Error creating jobs table:', createTableError);
+        
+        // Attempt to load from localStorage as fallback
+        return false;
+      }
+      
+      return true;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error ensuring jobs table exists:', error);
+    return false;
+  }
+};

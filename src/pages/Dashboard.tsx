@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -17,7 +18,7 @@ import PaymentModal from '../components/PaymentModal';
 import ThemeSwitcher from '../components/ThemeSwitcher';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { supabase } from '../lib/supabase';
+import { supabase, ensureJobsTable } from '../lib/supabase';
 import {
   Select,
   SelectContent,
@@ -93,63 +94,85 @@ const Dashboard = () => {
       try {
         setIsLoading(true);
         
-        // Check if jobs table exists and create it if it doesn't
-        const { error: tableCheckError } = await supabase
-          .from('jobs')
-          .select('id', { count: 'exact', head: true });
+        // Try to create the table if it doesn't exist
+        const tableExists = await ensureJobsTable(user.id);
         
-        if (tableCheckError && tableCheckError.code === '42P01') {
-          // Table doesn't exist, try to get jobs from localStorage as fallback
+        // If we couldn't create the table, try to get jobs from localStorage as fallback
+        if (!tableExists) {
           const savedJobs = localStorage.getItem(`jobs_${user.email}`);
           if (savedJobs) {
             const jobs = JSON.parse(savedJobs);
-            // Migrate jobs to Supabase
+            setState(prev => ({
+              ...prev,
+              jobs,
+              filteredJobs: jobs,
+            }));
+          }
+          return;
+        }
+        
+        // Table exists or was created, fetch jobs
+        const { data, error } = await supabase
+          .from('jobs')
+          .select('*')
+          .eq('user_id', user.id);
+        
+        if (error) {
+          // If still getting an error, try localStorage as fallback
+          const savedJobs = localStorage.getItem(`jobs_${user.email}`);
+          if (savedJobs) {
+            const jobs = JSON.parse(savedJobs);
+            
+            // Try to migrate jobs to Supabase if possible
             const jobsWithUser = jobs.map((job: Job) => ({
               ...job,
               user_id: user.id
             }));
             
-            // Insert jobs into Supabase
-            const { error: insertError } = await supabase
+            // Insert jobs into Supabase in the background
+            supabase
               .from('jobs')
-              .insert(jobsWithUser);
+              .insert(jobsWithUser)
+              .then(({ error: insertError }) => {
+                if (insertError) {
+                  console.error('Error migrating jobs to Supabase:', insertError);
+                }
+              });
             
-            if (insertError) {
-              console.error('Error migrating jobs to Supabase:', insertError);
-            } else {
-              setState(prev => ({
-                ...prev,
-                jobs,
-                filteredJobs: jobs,
-              }));
-            }
-          }
-        } else {
-          // Table exists, fetch jobs
-          const { data, error } = await supabase
-            .from('jobs')
-            .select('*')
-            .eq('user_id', user.id);
-          
-          if (error) {
-            throw error;
-          }
-          
-          if (data) {
             setState(prev => ({
               ...prev,
-              jobs: data,
-              filteredJobs: data,
+              jobs,
+              filteredJobs: jobs,
             }));
+          } else {
+            throw error;
           }
+        } else if (data) {
+          setState(prev => ({
+            ...prev,
+            jobs: data,
+            filteredJobs: data,
+          }));
         }
       } catch (error) {
         console.error('Error fetching jobs:', error);
-        toast({
-          title: "Error loading jobs",
-          description: "Failed to load your job applications. Please try again.",
-          variant: "destructive",
-        });
+        
+        // Try loading from localStorage as last resort
+        const savedJobs = localStorage.getItem(`jobs_${user.email}`);
+        if (savedJobs) {
+          const jobs = JSON.parse(savedJobs);
+          setState(prev => ({
+            ...prev,
+            jobs,
+            filteredJobs: jobs,
+          }));
+        } else {
+          toast({
+            title: "Error loading jobs",
+            description: "Failed to load your job applications. Please try again.",
+            variant: "destructive",
+          });
+        }
       } finally {
         setIsLoading(false);
       }
