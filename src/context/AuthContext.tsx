@@ -1,10 +1,14 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
+import { Session, User as SupabaseUser } from '@supabase/supabase-js';
+import { useToast } from '@/components/ui/use-toast';
 
 interface User {
   email: string;
   name: string;
   provider?: string;
+  id: string;
 }
 
 interface AuthContextType {
@@ -15,7 +19,7 @@ interface AuthContextType {
   loginWithIndeed: () => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
-  updateUserProfile: (updates: Partial<User>) => void;
+  updateUserProfile: (updates: Partial<User>) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -23,124 +27,247 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
 
-  useEffect(() => {
-    // Check if user is logged in
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-      setIsAuthenticated(true);
+  // Function to transform Supabase user to our User type
+  const transformUser = async (supabaseUser: SupabaseUser | null): Promise<User | null> => {
+    if (!supabaseUser) return null;
+
+    // Check if user profile exists in profiles table
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', supabaseUser.id)
+      .single();
+
+    if (profileError && profileError.code !== 'PGRST116') {
+      console.error('Error fetching profile:', profileError);
     }
-  }, []);
 
-  const login = async (email: string, password: string) => {
-    // In a real app, we would validate with a server
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    const foundUser = users.find(
-      (u: any) => u.email === email && u.password === password
+    // If profile doesn't exist, create one
+    if (!profile) {
+      const newProfile = {
+        id: supabaseUser.id,
+        name: supabaseUser.user_metadata.name || supabaseUser.email?.split('@')[0] || 'User',
+        email: supabaseUser.email || '',
+        provider: supabaseUser.app_metadata.provider || 'email'
+      };
+
+      const { error: insertError } = await supabase
+        .from('profiles')
+        .insert([newProfile]);
+
+      if (insertError) {
+        console.error('Error creating profile:', insertError);
+      }
+
+      return newProfile;
+    }
+
+    return {
+      id: supabaseUser.id,
+      email: profile.email || supabaseUser.email || '',
+      name: profile.name || supabaseUser.user_metadata.name || 'User',
+      provider: profile.provider || supabaseUser.app_metadata.provider || 'email'
+    };
+  };
+
+  // Initialize auth state
+  useEffect(() => {
+    const initializeAuth = async () => {
+      try {
+        // Get current session
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session) {
+          const userData = await transformUser(session.user);
+          setUser(userData);
+          setIsAuthenticated(true);
+        }
+      } catch (error) {
+        console.error('Error initializing auth:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initializeAuth();
+
+    // Set up auth state change listener
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === 'SIGNED_IN' && session) {
+          const userData = await transformUser(session.user);
+          setUser(userData);
+          setIsAuthenticated(true);
+        } else if (event === 'SIGNED_OUT') {
+          setUser(null);
+          setIsAuthenticated(false);
+        } else if (event === 'USER_UPDATED' && session) {
+          const userData = await transformUser(session.user);
+          setUser(userData);
+        }
+      }
     );
 
-    if (!foundUser) {
-      throw new Error('Invalid email or password');
-    }
-
-    const userData = { 
-      email: foundUser.email, 
-      name: foundUser.name,
-      provider: 'email'
+    // Cleanup listener on unmount
+    return () => {
+      authListener.subscription.unsubscribe();
     };
-    
-    localStorage.setItem('user', JSON.stringify(userData));
-    setUser(userData);
-    setIsAuthenticated(true);
+  }, []);
+
+  // Login with email and password
+  const login = async (email: string, password: string) => {
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (error) throw error;
+      
+      const userData = await transformUser(data.user);
+      setUser(userData);
+      setIsAuthenticated(true);
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to login');
+    }
   };
 
+  // Sign up with email, password, and name
   const signup = async (email: string, name: string, password: string) => {
-    // In a real app, we would send this to a server
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    
-    // Check if user already exists
-    if (users.find((u: any) => u.email === email)) {
-      throw new Error('User already exists');
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { name }
+        }
+      });
+
+      if (error) throw error;
+
+      // Create profile in profiles table
+      if (data.user) {
+        const newProfile = {
+          id: data.user.id,
+          email,
+          name,
+          provider: 'email'
+        };
+
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert([newProfile]);
+
+        if (profileError) {
+          console.error('Error creating profile:', profileError);
+        }
+
+        setUser(newProfile);
+        setIsAuthenticated(true);
+      }
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to sign up');
     }
-    
-    const newUser = { email, name, password };
-    users.push(newUser);
-    localStorage.setItem('users', JSON.stringify(users));
-    
-    // Log the user in after signup
-    const userData = { email, name, provider: 'email' };
-    localStorage.setItem('user', JSON.stringify(userData));
-    setUser(userData);
-    setIsAuthenticated(true);
   };
 
+  // Login with LinkedIn (mock implementation)
   const loginWithLinkedIn = async () => {
-    // In a real app, this would initiate OAuth flow with LinkedIn
-    // For demo purposes, we'll create a mock user
-    
-    // Generate a random email for the demo
-    const randomId = Math.floor(Math.random() * 10000);
-    const email = `linkedin_user_${randomId}@example.com`;
-    const name = `LinkedIn User ${randomId}`;
-    
-    // Add user to the users array if they don't exist
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    if (!users.find((u: any) => u.email === email)) {
-      const newUser = { email, name, password: 'linkedin_auth' };
-      users.push(newUser);
-      localStorage.setItem('users', JSON.stringify(users));
+    try {
+      // In a real implementation, you would use Supabase OAuth
+      // For now, we'll create a mock implementation
+      toast({
+        title: "LinkedIn Login",
+        description: "OAuth is not fully implemented. Please use email login for now.",
+      });
+      
+      // This is a placeholder for the real implementation
+      // await supabase.auth.signInWithOAuth({
+      //   provider: 'linkedin',
+      // });
+      
+      // For demo purposes, we'll create a random user
+      const randomId = Math.floor(Math.random() * 10000);
+      const mockUser = {
+        id: `linkedin_${randomId}`,
+        email: `linkedin_user_${randomId}@example.com`,
+        name: `LinkedIn User ${randomId}`,
+        provider: 'linkedin'
+      };
+      
+      setUser(mockUser);
+      setIsAuthenticated(true);
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to login with LinkedIn');
     }
-    
-    const userData = { email, name, provider: 'linkedin' };
-    localStorage.setItem('user', JSON.stringify(userData));
-    setUser(userData);
-    setIsAuthenticated(true);
   };
 
+  // Login with Indeed (mock implementation)
   const loginWithIndeed = async () => {
-    // In a real app, this would initiate OAuth flow with Indeed
-    // For demo purposes, we'll create a mock user
-    
-    // Generate a random email for the demo
-    const randomId = Math.floor(Math.random() * 10000);
-    const email = `indeed_user_${randomId}@example.com`;
-    const name = `Indeed User ${randomId}`;
-    
-    // Add user to the users array if they don't exist
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    if (!users.find((u: any) => u.email === email)) {
-      const newUser = { email, name, password: 'indeed_auth' };
-      users.push(newUser);
-      localStorage.setItem('users', JSON.stringify(users));
-    }
-    
-    const userData = { email, name, provider: 'indeed' };
-    localStorage.setItem('user', JSON.stringify(userData));
-    setUser(userData);
-    setIsAuthenticated(true);
-  };
-  
-  const updateUserProfile = (updates: Partial<User>) => {
-    if (!user) return;
-    
-    const updatedUser = { ...user, ...updates };
-    localStorage.setItem('user', JSON.stringify(updatedUser));
-    setUser(updatedUser);
-    
-    // Also update in the users array
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    const index = users.findIndex((u: any) => u.email === user.email);
-    if (index !== -1) {
-      users[index] = { ...users[index], ...updates };
-      localStorage.setItem('users', JSON.stringify(users));
+    try {
+      // In a real implementation, you would use Supabase OAuth
+      // For now, we'll create a mock implementation
+      toast({
+        title: "Indeed Login",
+        description: "OAuth is not fully implemented. Please use email login for now.",
+      });
+      
+      // For demo purposes, we'll create a random user
+      const randomId = Math.floor(Math.random() * 10000);
+      const mockUser = {
+        id: `indeed_${randomId}`,
+        email: `indeed_user_${randomId}@example.com`,
+        name: `Indeed User ${randomId}`,
+        provider: 'indeed'
+      };
+      
+      setUser(mockUser);
+      setIsAuthenticated(true);
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to login with Indeed');
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem('user');
-    setUser(null);
-    setIsAuthenticated(false);
+  // Update user profile
+  const updateUserProfile = async (updates: Partial<User>) => {
+    if (!user) return;
+
+    try {
+      // Update user metadata if name is changed
+      if (updates.name) {
+        await supabase.auth.updateUser({
+          data: { name: updates.name }
+        });
+      }
+
+      // Update profile in profiles table
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          ...updates
+        })
+        .eq('id', user.id);
+
+      if (error) throw error;
+
+      // Update local state
+      setUser({ ...user, ...updates });
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to update profile');
+    }
+  };
+
+  // Logout
+  const logout = async () => {
+    try {
+      await supabase.auth.signOut();
+      setUser(null);
+      setIsAuthenticated(false);
+    } catch (error: any) {
+      console.error('Error logging out:', error);
+    }
   };
 
   return (
@@ -154,7 +281,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       isAuthenticated,
       updateUserProfile
     }}>
-      {children}
+      {!isLoading && children}
     </AuthContext.Provider>
   );
 }

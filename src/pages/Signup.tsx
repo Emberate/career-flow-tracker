@@ -4,10 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/Navbar';
 import AuthForm from '../components/AuthForm';
+import { useToast } from '@/components/ui/use-toast';
 
 const Signup = () => {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   // If user is already authenticated, redirect to dashboard
   React.useEffect(() => {

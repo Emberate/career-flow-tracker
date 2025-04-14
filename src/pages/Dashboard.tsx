@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -18,6 +17,7 @@ import PaymentModal from '../components/PaymentModal';
 import ThemeSwitcher from '../components/ThemeSwitcher';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { supabase } from '../lib/supabase';
 import {
   Select,
   SelectContent,
@@ -76,6 +76,7 @@ const Dashboard = () => {
   const [jobToDelete, setJobToDelete] = useState<string | null>(null);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("jobs");
+  const [isLoading, setIsLoading] = useState(true);
   
   // Redirect if not authenticated
   useEffect(() => {
@@ -84,20 +85,78 @@ const Dashboard = () => {
     }
   }, [isAuthenticated, navigate]);
   
-  // Load jobs from localStorage
+  // Load jobs from Supabase
   useEffect(() => {
-    if (user?.email) {
-      const savedJobs = localStorage.getItem(`jobs_${user.email}`);
-      if (savedJobs) {
-        const jobs = JSON.parse(savedJobs);
-        setState(prev => ({
-          ...prev,
-          jobs,
-          filteredJobs: jobs,
-        }));
+    const fetchJobs = async () => {
+      if (!user?.id) return;
+      
+      try {
+        setIsLoading(true);
+        
+        // Check if jobs table exists and create it if it doesn't
+        const { error: tableCheckError } = await supabase
+          .from('jobs')
+          .select('id', { count: 'exact', head: true });
+        
+        if (tableCheckError && tableCheckError.code === '42P01') {
+          // Table doesn't exist, try to get jobs from localStorage as fallback
+          const savedJobs = localStorage.getItem(`jobs_${user.email}`);
+          if (savedJobs) {
+            const jobs = JSON.parse(savedJobs);
+            // Migrate jobs to Supabase
+            const jobsWithUser = jobs.map((job: Job) => ({
+              ...job,
+              user_id: user.id
+            }));
+            
+            // Insert jobs into Supabase
+            const { error: insertError } = await supabase
+              .from('jobs')
+              .insert(jobsWithUser);
+            
+            if (insertError) {
+              console.error('Error migrating jobs to Supabase:', insertError);
+            } else {
+              setState(prev => ({
+                ...prev,
+                jobs,
+                filteredJobs: jobs,
+              }));
+            }
+          }
+        } else {
+          // Table exists, fetch jobs
+          const { data, error } = await supabase
+            .from('jobs')
+            .select('*')
+            .eq('user_id', user.id);
+          
+          if (error) {
+            throw error;
+          }
+          
+          if (data) {
+            setState(prev => ({
+              ...prev,
+              jobs: data,
+              filteredJobs: data,
+            }));
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching jobs:', error);
+        toast({
+          title: "Error loading jobs",
+          description: "Failed to load your job applications. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
       }
-    }
-  }, [user]);
+    };
+    
+    fetchJobs();
+  }, [user, toast]);
   
   // Apply filters when jobs or filters change
   useEffect(() => {
@@ -137,59 +196,108 @@ const Dashboard = () => {
     setJobToDelete(jobId);
   };
   
-  const confirmDelete = () => {
-    if (!jobToDelete) return;
+  const confirmDelete = async () => {
+    if (!jobToDelete || !user?.id) return;
     
-    const updatedJobs = state.jobs.filter(job => job.id !== jobToDelete);
-    
-    setState(prev => ({
-      ...prev,
-      jobs: updatedJobs,
-    }));
-    
-    // Save to localStorage
-    if (user?.email) {
-      localStorage.setItem(`jobs_${user.email}`, JSON.stringify(updatedJobs));
+    try {
+      // Delete from Supabase
+      const { error } = await supabase
+        .from('jobs')
+        .delete()
+        .eq('id', jobToDelete)
+        .eq('user_id', user.id);
+      
+      if (error) throw error;
+      
+      // Update local state
+      const updatedJobs = state.jobs.filter(job => job.id !== jobToDelete);
+      
+      setState(prev => ({
+        ...prev,
+        jobs: updatedJobs,
+      }));
+      
+      toast({
+        title: "Job deleted",
+        description: "The job has been removed from your list.",
+      });
+    } catch (error) {
+      console.error('Error deleting job:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete the job. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setJobToDelete(null);
     }
-    
-    toast({
-      title: "Job deleted",
-      description: "The job has been removed from your list.",
-    });
-    
-    setJobToDelete(null);
   };
   
-  const saveJob = (job: Job) => {
-    let updatedJobs: Job[];
+  const saveJob = async (job: Job) => {
+    if (!user?.id) return;
     
-    if (editingJob) {
-      // Update existing job
-      updatedJobs = state.jobs.map(j => j.id === job.id ? job : j);
+    try {
+      let updatedJobs: Job[];
+      
+      if (editingJob) {
+        // Update existing job in Supabase
+        const { error } = await supabase
+          .from('jobs')
+          .update({
+            ...job,
+            user_id: user.id,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', job.id)
+          .eq('user_id', user.id);
+        
+        if (error) throw error;
+        
+        // Update local state
+        updatedJobs = state.jobs.map(j => j.id === job.id ? job : j);
+        
+        toast({
+          title: "Job updated",
+          description: "The job details have been updated successfully.",
+        });
+      } else {
+        // Add new job to Supabase
+        const newJob = {
+          ...job,
+          user_id: user.id,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+        
+        const { error } = await supabase
+          .from('jobs')
+          .insert([newJob]);
+        
+        if (error) throw error;
+        
+        // Update local state
+        updatedJobs = [...state.jobs, job];
+        
+        toast({
+          title: "Job added",
+          description: "The new job has been added to your list.",
+        });
+      }
+      
+      setState(prev => ({
+        ...prev,
+        jobs: updatedJobs,
+      }));
+      
+      setIsJobFormOpen(false);
+    } catch (error) {
+      console.error('Error saving job:', error);
       toast({
-        title: "Job updated",
-        description: "The job details have been updated successfully.",
-      });
-    } else {
-      // Add new job
-      updatedJobs = [...state.jobs, job];
-      toast({
-        title: "Job added",
-        description: "The new job has been added to your list.",
+        title: "Error",
+        description: "Failed to save the job. Please try again.",
+        variant: "destructive",
       });
     }
-    
-    setState(prev => ({
-      ...prev,
-      jobs: updatedJobs,
-    }));
-    
-    // Save to localStorage
-    if (user?.email) {
-      localStorage.setItem(`jobs_${user.email}`, JSON.stringify(updatedJobs));
-    }
-    
-    setIsJobFormOpen(false);
   };
   
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -216,7 +324,6 @@ const Dashboard = () => {
     setIsPaymentModalOpen(true);
   };
   
-  // Stats calculation
   const totalJobs = state.jobs.length;
   const appliedJobs = state.jobs.filter(j => j.status === 'Applied').length;
   const interviewJobs = state.jobs.filter(j => j.status === 'Interview').length;
@@ -347,7 +454,15 @@ const Dashboard = () => {
             </div>
             
             {/* Job list */}
-            {state.filteredJobs.length > 0 ? (
+            {isLoading ? (
+              <div className="text-center py-12 bg-white rounded-lg">
+                <svg className="animate-spin h-12 w-12 text-primary mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p className="mt-4 text-gray-600">Loading your job applications...</p>
+              </div>
+            ) : state.filteredJobs.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {state.filteredJobs.map(job => (
                   <JobCard

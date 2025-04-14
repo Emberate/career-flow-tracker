@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -7,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
 import { Separator } from '@/components/ui/separator';
 import { Linkedin, Briefcase, Mail } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 interface AuthFormProps {
   type: 'login' | 'signup';
