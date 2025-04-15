@@ -73,7 +73,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
         {type === 'login' ? 'Log In to Your Account' : 'Create Your Account'}
       </h2>
       
-      <Alert variant="warning" className="mb-6">
+      <Alert variant="destructive" className="mb-6">
         <AlertTriangle className="h-4 w-4" />
         <AlertTitle>Demo Mode</AlertTitle>
         <AlertDescription>
