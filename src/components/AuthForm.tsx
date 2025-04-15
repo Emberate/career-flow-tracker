@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,7 +7,6 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
 import { Separator } from '@/components/ui/separator';
 import { Linkedin, Briefcase, Mail, AlertTriangle } from 'lucide-react';
-import { supabase } from '../lib/supabase';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 interface AuthFormProps {
@@ -20,43 +19,12 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
   const [name, setName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [socialLoading, setSocialLoading] = useState<string | null>(null);
-  const [supabaseConfigured, setSupabaseConfigured] = useState(true);
-  const { login, signup, loginWithLinkedIn, loginWithIndeed } = useAuth();
+  const { login, signup } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Check if Supabase is properly configured
-  useEffect(() => {
-    const checkSupabaseConfig = async () => {
-      try {
-        // Simple health check to see if we can connect to Supabase
-        const { error } = await supabase.from('profiles').select('count', { count: 'exact', head: true });
-        
-        // If we get a "Failed to fetch" error or URL is still the fallback, mark as not configured
-        if (error && (error.message.includes('Failed to fetch') || error.message.includes('fetch failed'))) {
-          setSupabaseConfigured(false);
-        }
-      } catch (error) {
-        console.error('Supabase connection check error:', error);
-        setSupabaseConfigured(false);
-      }
-    };
-
-    checkSupabaseConfig();
-  }, []);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!supabaseConfigured) {
-      toast({
-        title: "Configuration Error",
-        description: "Supabase is not properly configured. Please update your configuration.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
     setIsLoading(true);
 
     try {
@@ -86,64 +54,17 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
     }
   };
 
-  const handleLinkedInLogin = async () => {
-    if (!supabaseConfigured) {
-      toast({
-        title: "Configuration Error",
-        description: "Supabase is not properly configured. Please update your configuration.",
-        variant: "destructive",
-      });
-      return;
-    }
+  const handleSocialLogin = (provider: string) => {
+    setSocialLoading(provider);
     
-    setSocialLoading('linkedin');
-    try {
-      await loginWithLinkedIn();
+    // Simulate login delay
+    setTimeout(() => {
       toast({
-        title: "LinkedIn login successful",
-        description: "Welcome to CareerFlow!",
+        title: "Demo Mode",
+        description: `Social login with ${provider} is not available in demo mode. Please use email login.`,
       });
-      navigate('/dashboard');
-    } catch (error) {
-      console.error('LinkedIn auth error:', error);
-      toast({
-        title: "Authentication error",
-        description: "Failed to login with LinkedIn. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
       setSocialLoading(null);
-    }
-  };
-
-  const handleIndeedLogin = async () => {
-    if (!supabaseConfigured) {
-      toast({
-        title: "Configuration Error",
-        description: "Supabase is not properly configured. Please update your configuration.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    setSocialLoading('indeed');
-    try {
-      await loginWithIndeed();
-      toast({
-        title: "Indeed login successful",
-        description: "Welcome to CareerFlow!",
-      });
-      navigate('/dashboard');
-    } catch (error) {
-      console.error('Indeed auth error:', error);
-      toast({
-        title: "Authentication error",
-        description: "Failed to login with Indeed. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setSocialLoading(null);
-    }
+    }, 1000);
   };
 
   return (
@@ -152,25 +73,23 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
         {type === 'login' ? 'Log In to Your Account' : 'Create Your Account'}
       </h2>
       
-      {!supabaseConfigured && (
-        <Alert variant="destructive" className="mb-6">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertTitle>Configuration Error</AlertTitle>
-          <AlertDescription>
-            Supabase is not properly configured. Please update the Supabase URL and anon key in the project.
-          </AlertDescription>
-        </Alert>
-      )}
+      <Alert variant="warning" className="mb-6">
+        <AlertTriangle className="h-4 w-4" />
+        <AlertTitle>Demo Mode</AlertTitle>
+        <AlertDescription>
+          This is a demo application. Use any email and password to login.
+        </AlertDescription>
+      </Alert>
       
       {/* Social Login Buttons */}
       <div className="space-y-3 mb-6">
         <Button 
           type="button" 
           className="w-full bg-[#0077b5] hover:bg-[#0077b5]/90" 
-          onClick={handleLinkedInLogin}
+          onClick={() => handleSocialLogin('LinkedIn')}
           disabled={!!socialLoading}
         >
-          {socialLoading === 'linkedin' ? (
+          {socialLoading === 'LinkedIn' ? (
             <span className="flex items-center justify-center">
               <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -189,10 +108,10 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
         <Button 
           type="button" 
           className="w-full bg-[#003A9B] hover:bg-[#003A9B]/90" 
-          onClick={handleIndeedLogin}
+          onClick={() => handleSocialLogin('Indeed')}
           disabled={!!socialLoading}
         >
-          {socialLoading === 'indeed' ? (
+          {socialLoading === 'Indeed' ? (
             <span className="flex items-center justify-center">
               <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>

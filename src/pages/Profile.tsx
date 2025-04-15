@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -128,7 +127,7 @@ const Profile = () => {
                     </div>
                     <div>
                       <Label className="text-sm text-gray-500">Account Type</Label>
-                      <p className="text-lg capitalize">{user.provider || 'Email'}</p>
+                      <p className="text-lg capitalize">Email</p>
                     </div>
                   </div>
                 )}
