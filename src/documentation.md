@@ -1,51 +1,20 @@
 
-# Job Tracker Application Documentation
+# CareerFlow Documentation
 
 ## Overview
 
-This application is a comprehensive job tracking system that helps users manage their job application process. The application offers various features such as job application tracking, interview scheduling, analytics, and more.
+CareerFlow is a comprehensive job tracking system that helps users manage their job application process. The application offers various features such as job application tracking, interview scheduling, analytics, and more.
 
-## Pages
+## Documentation Structure
 
-### 1. Dashboard (`/dashboard`)
-The main page of the application where users can:
-- View and manage job applications
-- Track application statuses
-- View analytics
-- Access all major features
+For detailed documentation, please refer to the following files in the `src/documentation` directory:
 
-### 2. Login (`/login`)
-Authentication page for existing users to login.
-
-### 3. Signup (`/signup`)
-Registration page for new users.
-
-### 4. Profile (`/profile`)
-User profile management page.
-
-### 5. Product (`/product`)
-Product information page.
-
-### 6. Features (`/features`)
-Detailed feature listings page.
-
-### 7. How It Works (`/how-it-works`)
-Page explaining the application's workflow.
-
-### 8. Pricing (`/pricing`)
-Subscription plans and pricing information.
-
-### 9. Support (`/support`)
-Support information and resources.
-
-### 10. Help Center (`/help`)
-Comprehensive help resources.
-
-### 11. Contact (`/contact`)
-Contact form and information.
-
-### 12. FAQ (`/faq`)
-Frequently asked questions.
+1. [Project Structure](./documentation/PROJECT_STRUCTURE.md) - Detailed overview of directories and files
+2. [Components](./documentation/COMPONENTS.md) - Information about application components
+3. [Data Management](./documentation/DATA_MANAGEMENT.md) - How data is managed and stored
+4. [Getting Started](./documentation/GETTING_STARTED.md) - User guide for getting started
+5. [Development](./documentation/DEVELOPMENT.md) - Guide for developers
+6. [FAQ](./documentation/FAQ.md) - Frequently asked questions
 
 ## Key Features
 
@@ -96,66 +65,57 @@ Frequently asked questions.
   - Green
   - Blue
 
-## Data Storage
+## Pages
 
-The application uses localStorage for data persistence, which includes:
-- Job applications
-- User questions
-- Reminders
-- Theme preferences
+### 1. Dashboard (`/dashboard`)
+The main page of the application where users can:
+- View and manage job applications
+- Track application statuses
+- View analytics
+- Access all major features
 
-## Component Structure
+### 2. Login (`/login`)
+Authentication page for existing users to login.
 
-### Main Components
-1. `PageLayout.tsx` - Base layout for all pages
-2. `Navbar.tsx` - Navigation header
-3. `Footer.tsx` - Page footer
-4. `JobCard.tsx` - Individual job listing card
-5. `JobForm.tsx` - Form for adding/editing jobs
+### 3. Signup (`/signup`)
+Registration page for new users.
 
-### Dashboard Components
-1. `JobAnalytics.tsx` - Charts and metrics
-2. `InterviewCalendar.tsx` - Calendar view for interviews
-3. `Reminders.tsx` - Reminder management
-4. `CompanyResearch.tsx` - Company information
-5. `SuccessMetrics.tsx` - Success tracking metrics
-6. `InterviewQA.tsx` - Interview questions and answers
-7. `ThemeSwitcher.tsx` - Theme selection and customization
+### 4. Profile (`/profile`)
+User profile management page.
 
-## Customization
+### 5. Product (`/product`)
+Product information page.
 
-### Changing Themes
-1. Click on the "Theme" button in the dashboard header
-2. Select from available themes:
-   - Light: Default light theme
-   - Dark: Dark mode for reduced eye strain
-   - Purple: Purple accent theme
-   - Green: Green accent theme
-   - Blue: Blue accent theme
+### 6. Features (`/features`)
+Detailed feature listings page.
 
-The theme selection is remembered between sessions using localStorage.
+### 7. How It Works (`/how-it-works`)
+Page explaining the application's workflow.
 
-## Routes
+### 8. Pricing (`/pricing`)
+Subscription plans and pricing information.
 
-All routes are defined in `App.tsx` using React Router:
+### 9. Support (`/support`)
+Support information and resources.
 
-```jsx
-<BrowserRouter>
-  <Routes>
-    <Route path="/" element={<Index />} />
-    <Route path="/dashboard" element={<Dashboard />} />
-    <Route path="/login" element={<Login />} />
-    <Route path="/signup" element={<Signup />} />
-    <Route path="/profile" element={<Profile />} />
-    <Route path="/product" element={<Product />} />
-    <Route path="/features" element={<Features />} />
-    <Route path="/how-it-works" element={<HowItWorks />} />
-    <Route path="/pricing" element={<Pricing />} />
-    <Route path="/support" element={<Support />} />
-    <Route path="/help" element={<HelpCenter />} />
-    <Route path="/contact" element={<Contact />} />
-    <Route path="/faq" element={<FAQ />} />
-    <Route path="*" element={<NotFound />} />
-  </Routes>
-</BrowserRouter>
-```
+### 10. Help Center (`/help`)
+Comprehensive help resources.
+
+### 11. Contact (`/contact`)
+Contact form and information.
+
+### 12. FAQ (`/faq`)
+Frequently asked questions.
+
+## Technical Architecture
+
+The application is built with:
+- React for the UI components
+- TypeScript for type safety
+- Vite as the build tool
+- React Router for navigation
+- Tailwind CSS for styling
+- Shadcn UI for component library
+- localStorage for data persistence
+
+For more detailed technical information, please refer to the [Development Guide](./documentation/DEVELOPMENT.md).
