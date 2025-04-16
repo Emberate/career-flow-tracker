@@ -69,7 +69,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
 
   return (
     <div className="max-w-md w-full mx-auto p-8 bg-white rounded-xl shadow-sm">
-      <h2 className="text-2xl font-bold text-center mb-6">
+      <h2 className="text-2xl font-bold text-center mb-6 text-gray-900 dark:text-white">
         {type === 'login' ? 'Log In to Your Account' : 'Create Your Account'}
       </h2>
       
