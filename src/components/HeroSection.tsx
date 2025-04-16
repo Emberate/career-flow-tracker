@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -74,7 +73,7 @@ const HeroSection = () => {
         </div>
 
         {/* Enhanced preview section */}
-        <div className="mt-16 animate-fade-in animate-delay-300">
+        <div className="mt-16 animate-fade-in animate-delay-300 relative">
           <div className="relative mx-auto overflow-hidden rounded-xl shadow-2xl max-w-5xl transition-all duration-500 hover:shadow-[0_0_40px_rgba(59,130,246,0.3)]">
             <div className="bg-gray-900/80 backdrop-blur-md rounded-t-xl p-3">
               <div className="flex space-x-2">
@@ -83,7 +82,7 @@ const HeroSection = () => {
                 <div className="h-3 w-3 rounded-full bg-green-500"></div>
               </div>
             </div>
-            <div className="glass-card p-6 bg-gray-900/50">
+            <div className="glass-card p-6 bg-gray-900/50 relative">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="bg-gray-800/50 backdrop-blur-md p-6 rounded-xl border border-white/10 hover:border-blue-500/50 transition-all duration-300 transform hover:-translate-y-1">
                   <div className="h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded w-32 mb-4"></div>
@@ -102,20 +101,22 @@ const HeroSection = () => {
                   </div>
                 </div>
               </div>
+              
+              {/* Scroll indicator positioned inside the box */}
+              <div 
+                className="absolute bottom-4 left-1/2 transform -translate-x-1/2 cursor-pointer animate-bounce z-10"
+                onClick={scrollToFeatures}
+              >
+                <div className="flex flex-col items-center">
+                  <span className="text-sm text-gray-400 mb-1">Explore Features</span>
+                  <ChevronDown className="text-blue-400 h-6 w-6" />
+                </div>
+              </div>
             </div>
           </div>
         </div>
         
-        {/* Scroll indicator */}
-        <div 
-          className="hidden md:flex absolute bottom-10 left-1/2 transform -translate-x-1/2 cursor-pointer animate-bounce"
-          onClick={scrollToFeatures}
-        >
-          <div className="flex flex-col items-center">
-            <span className="text-sm text-gray-400 mb-2">Explore Features</span>
-            <ChevronDown className="text-blue-400 h-6 w-6" />
-          </div>
-        </div>
+        {/* Remove the previous scroll indicator */}
       </div>
     </section>
   );
