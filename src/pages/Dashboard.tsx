@@ -55,6 +55,7 @@ import {
   Bell
 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
+import ExternalJobs from '../components/ExternalJobs';
 
 const Dashboard = () => {
   const { user, isAuthenticated } = useAuth();
@@ -77,14 +78,12 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("jobs");
   const [isLoading, setIsLoading] = useState(true);
   
-  // Redirect if not authenticated
   useEffect(() => {
     if (!isAuthenticated) {
       navigate('/login');
     }
   }, [isAuthenticated, navigate]);
   
-  // Load jobs from localStorage
   useEffect(() => {
     const fetchJobs = async () => {
       if (!user?.id) return;
@@ -92,7 +91,6 @@ const Dashboard = () => {
       try {
         setIsLoading(true);
         
-        // Get jobs from localStorage
         const savedJobs = localStorage.getItem(`jobs_${user.email}`);
         if (savedJobs) {
           const jobs = JSON.parse(savedJobs);
@@ -102,7 +100,6 @@ const Dashboard = () => {
             filteredJobs: jobs,
           }));
         }
-        
       } catch (error) {
         console.error('Error fetching jobs:', error);
         toast({
@@ -118,7 +115,6 @@ const Dashboard = () => {
     fetchJobs();
   }, [user, toast]);
   
-  // Apply filters when jobs or filters change
   useEffect(() => {
     let filtered = [...state.jobs];
     
@@ -160,10 +156,8 @@ const Dashboard = () => {
     if (!jobToDelete || !user?.id) return;
     
     try {
-      // Delete from local state
       const updatedJobs = state.jobs.filter(job => job.id !== jobToDelete);
       
-      // Update localStorage
       localStorage.setItem(`jobs_${user.email}`, JSON.stringify(updatedJobs));
       
       setState(prev => ({
@@ -194,7 +188,6 @@ const Dashboard = () => {
       let updatedJobs: Job[];
       
       if (editingJob) {
-        // Update existing job
         updatedJobs = state.jobs.map(j => j.id === job.id ? job : j);
         
         toast({
@@ -202,7 +195,6 @@ const Dashboard = () => {
           description: "The job details have been updated successfully.",
         });
       } else {
-        // Add new job
         updatedJobs = [...state.jobs, job];
         
         toast({
@@ -211,7 +203,6 @@ const Dashboard = () => {
         });
       }
       
-      // Save to localStorage
       localStorage.setItem(`jobs_${user.email}`, JSON.stringify(updatedJobs));
       
       setState(prev => ({
@@ -289,7 +280,6 @@ const Dashboard = () => {
           </div>
         </div>
         
-        {/* Stats row */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
           <div className="dashboard-card bg-white p-4 rounded-lg shadow-sm border border-gray-200">
             <p className="text-gray-600 text-sm dashboard-text">Total</p>
@@ -350,7 +340,8 @@ const Dashboard = () => {
           </TabsList>
           
           <TabsContent value="jobs" className="space-y-4">
-            {/* Filters and search */}
+            <ExternalJobs />
+            
             <div className="flex flex-col md:flex-row gap-4 mb-6">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
@@ -383,7 +374,6 @@ const Dashboard = () => {
               </div>
             </div>
             
-            {/* Job list */}
             {isLoading ? (
               <div className="text-center py-12 bg-white rounded-lg">
                 <svg className="animate-spin h-12 w-12 text-primary mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
