@@ -6,13 +6,31 @@ import Footer from './Footer';
 interface PageLayoutProps {
   children: React.ReactNode;
   title: string;
+  description?: string;
   className?: string;
 }
 
-const PageLayout = ({ children, title, className = '' }: PageLayoutProps) => {
+const PageLayout = ({ children, title, description, className = '' }: PageLayoutProps) => {
   useEffect(() => {
-    // Set page title
+    // Update meta tags
     document.title = `${title} | CareerFlow`;
+    
+    // Update meta description if provided
+    const metaDescription = document.querySelector('meta[name="description"]');
+    if (metaDescription && description) {
+      metaDescription.setAttribute('content', description);
+    }
+    
+    // Update Open Graph meta tags
+    const ogTitle = document.querySelector('meta[property="og:title"]');
+    const ogDescription = document.querySelector('meta[property="og:description"]');
+    
+    if (ogTitle) {
+      ogTitle.setAttribute('content', `${title} | CareerFlow`);
+    }
+    if (ogDescription && description) {
+      ogDescription.setAttribute('content', description);
+    }
     
     // Apply dark mode class to body
     document.documentElement.classList.add('dark');
@@ -24,7 +42,7 @@ const PageLayout = ({ children, title, className = '' }: PageLayoutProps) => {
     return () => {
       // No need to remove dark mode as all pages use it
     };
-  }, [title]);
+  }, [title, description]);
 
   return (
     <div className="min-h-screen flex flex-col overflow-x-hidden transition-colors duration-200 ease-in-out bg-black text-white">
