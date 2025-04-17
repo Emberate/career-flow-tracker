@@ -260,30 +260,30 @@ const Dashboard = () => {
       />
       
       <div id="dashboard-container" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12 -mt-8 bg-gray-50">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+        <div className="flex flex-col space-y-4 md:flex-row md:justify-between md:items-center md:space-y-0 mb-8">
           <div>
             <h2 className="text-xl font-bold text-gray-900 dashboard-text">My Job Tracker</h2>
             <p className="text-gray-600 mt-1 dashboard-text">
               {user?.name ? `Welcome, ${user.name}` : 'Track and manage your job applications'}
             </p>
           </div>
-          <div className="flex gap-3 mt-4 md:mt-0">
+          <div className="flex flex-wrap gap-3">
             <ThemeSwitcher />
-            <Button onClick={handleUpgrade} variant="outline">
+            <Button onClick={handleUpgrade} variant="outline" className="w-full sm:w-auto">
               <CreditCard size={18} className="mr-2" />
               Upgrade to Premium
             </Button>
-            <Button onClick={handleAddJob}>
+            <Button onClick={handleAddJob} className="w-full sm:w-auto">
               <Plus size={18} className="mr-2" />
               Add Job
             </Button>
           </div>
         </div>
         
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
           <div className="dashboard-card bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-            <p className="text-gray-600 text-sm dashboard-text">Total</p>
-            <p className="text-2xl font-bold dashboard-text">{totalJobs}</p>
+            <p className="text-gray-600 text-sm">Total</p>
+            <p className="text-2xl font-bold">{totalJobs}</p>
           </div>
           <div className="dashboard-card bg-blue-50 p-4 rounded-lg shadow-sm border border-blue-100">
             <p className="text-blue-700 text-sm">Applied</p>
@@ -304,55 +304,57 @@ const Dashboard = () => {
         </div>
         
         <Tabs defaultValue="jobs" value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList className="dashboard-card bg-white border">
-            <TabsTrigger value="jobs">
-              <ListChecks size={16} className="mr-2" />
-              Job Applications
-            </TabsTrigger>
-            <TabsTrigger value="analytics">
-              <BarChart size={16} className="mr-2" />
-              Analytics
-            </TabsTrigger>
-            <TabsTrigger value="calendar">
-              <Calendar size={16} className="mr-2" />
-              Interviews
-            </TabsTrigger>
-            <TabsTrigger value="reminders">
-              <Bell size={16} className="mr-2" />
-              Reminders
-            </TabsTrigger>
-            <TabsTrigger value="research">
-              <Building size={16} className="mr-2" />
-              Research
-            </TabsTrigger>
-            <TabsTrigger value="metrics">
-              <TrendingUp size={16} className="mr-2" />
-              Success Metrics
-            </TabsTrigger>
-            <TabsTrigger value="interview-qa">
-              <MessageSquare size={16} className="mr-2" />
-              Interview Q&A
-            </TabsTrigger>
-            <TabsTrigger value="premium">
-              <CreditCard size={16} className="mr-2" />
-              Premium
-            </TabsTrigger>
-          </TabsList>
+          <div className="overflow-x-auto">
+            <TabsList className="dashboard-card bg-white border inline-flex min-w-max">
+              <TabsTrigger value="jobs" className="text-xs sm:text-sm">
+                <ListChecks size={16} className="mr-2 hidden sm:inline-block" />
+                Jobs
+              </TabsTrigger>
+              <TabsTrigger value="analytics" className="text-xs sm:text-sm">
+                <BarChart size={16} className="mr-2 hidden sm:inline-block" />
+                Analytics
+              </TabsTrigger>
+              <TabsTrigger value="calendar" className="text-xs sm:text-sm">
+                <Calendar size={16} className="mr-2 hidden sm:inline-block" />
+                Interviews
+              </TabsTrigger>
+              <TabsTrigger value="reminders" className="text-xs sm:text-sm">
+                <Bell size={16} className="mr-2 hidden sm:inline-block" />
+                Reminders
+              </TabsTrigger>
+              <TabsTrigger value="research" className="text-xs sm:text-sm">
+                <Building size={16} className="mr-2 hidden sm:inline-block" />
+                Research
+              </TabsTrigger>
+              <TabsTrigger value="metrics" className="text-xs sm:text-sm">
+                <TrendingUp size={16} className="mr-2 hidden sm:inline-block" />
+                Metrics
+              </TabsTrigger>
+              <TabsTrigger value="interview-qa" className="text-xs sm:text-sm">
+                <MessageSquare size={16} className="mr-2 hidden sm:inline-block" />
+                Q&A
+              </TabsTrigger>
+              <TabsTrigger value="premium" className="text-xs sm:text-sm">
+                <CreditCard size={16} className="mr-2 hidden sm:inline-block" />
+                Premium
+              </TabsTrigger>
+            </TabsList>
+          </div>
           
           <TabsContent value="jobs" className="space-y-4">
             <ExternalJobs />
             
-            <div className="flex flex-col md:flex-row gap-4 mb-6">
+            <div className="flex flex-col sm:flex-row gap-4 mb-6">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
                 <Input
-                  placeholder="Search jobs by title, company, or tags..."
+                  placeholder="Search jobs..."
                   className="pl-10"
                   value={state.filters.search}
                   onChange={handleSearchChange}
                 />
               </div>
-              <div className="w-full md:w-48">
+              <div className="w-full sm:w-48">
                 <Select
                   value={state.filters.status || 'All'}
                   onValueChange={handleStatusChange}
@@ -383,7 +385,7 @@ const Dashboard = () => {
                 <p className="mt-4 text-gray-600">Loading your job applications...</p>
               </div>
             ) : state.filteredJobs.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {state.filteredJobs.map(job => (
                   <JobCard
                     key={job.id}
