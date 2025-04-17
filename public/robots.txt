@@ -30,6 +30,7 @@ Disallow: /admin/
 Disallow: /private/
 
 # Sitemaps
-Sitemap: https://careerflow.app/sitemap.xml
-Sitemap: https://careerflow.app/sitemap-pages.xml
-Sitemap: https://careerflow.app/sitemap-blog.xml
+Sitemap: https://prospectpath.app/sitemap.xml
+Sitemap: https://prospectpath.app/sitemap-pages.xml
+Sitemap: https://prospectpath.app/sitemap-blog.xml
+

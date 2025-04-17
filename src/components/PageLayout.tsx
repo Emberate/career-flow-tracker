@@ -13,7 +13,7 @@ interface PageLayoutProps {
 const PageLayout = ({ children, title, description, className = '' }: PageLayoutProps) => {
   useEffect(() => {
     // Update meta tags
-    document.title = `${title} | CareerFlow`;
+    document.title = `${title} | ProspectPath`;
     
     // Update meta description if provided
     const metaDescription = document.querySelector('meta[name="description"]');
@@ -26,7 +26,7 @@ const PageLayout = ({ children, title, description, className = '' }: PageLayout
     const ogDescription = document.querySelector('meta[property="og:description"]');
     
     if (ogTitle) {
-      ogTitle.setAttribute('content', `${title} | CareerFlow`);
+      ogTitle.setAttribute('content', `${title} | ProspectPath`);
     }
     if (ogDescription && description) {
       ogDescription.setAttribute('content', description);
@@ -56,3 +56,4 @@ const PageLayout = ({ children, title, description, className = '' }: PageLayout
 };
 
 export default PageLayout;
+

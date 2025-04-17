@@ -32,7 +32,7 @@ const Navbar = () => {
     <header className="sticky top-0 z-50 border-b border-gray-800 dark:border-gray-800 bg-white dark:bg-black/90 backdrop-blur-md">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         <Link to="/" className="text-xl font-bold text-primary">
-          CareerFlow
+          ProspectPath
         </Link>
         
         {isMobile ? (
@@ -277,3 +277,4 @@ const Navbar = () => {
 };
 
 export default Navbar;
+
