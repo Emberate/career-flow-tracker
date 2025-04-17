@@ -1,9 +1,10 @@
 
-# Allow all crawlers
+# Global Crawling Rules
 User-agent: *
 Allow: /
+Crawl-delay: 2
 
-# Specific rules for major search engines
+# Major Search Engines
 User-agent: Googlebot
 Allow: /
 Crawl-delay: 1
@@ -16,17 +17,19 @@ User-agent: DuckDuckBot
 Allow: /
 Crawl-delay: 1
 
-# Social media crawlers
+# Social Media Crawlers
 User-agent: Twitterbot
 Allow: /
 
 User-agent: facebookexternalhit
 Allow: /
 
-# Sitemap location (you'll need to create and host a sitemap)
-Sitemap: https://careerflow.app/sitemap.xml
-
-# Disallow specific paths (customize as needed)
+# Specific Path Restrictions
 Disallow: /api/
 Disallow: /admin/
 Disallow: /private/
+
+# Sitemaps
+Sitemap: https://careerflow.app/sitemap.xml
+Sitemap: https://careerflow.app/sitemap-pages.xml
+Sitemap: https://careerflow.app/sitemap-blog.xml
