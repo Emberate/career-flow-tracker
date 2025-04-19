@@ -1,19 +1,18 @@
-
-# CareerFlow FAQ
+# ProspectPath FAQ
 
 ## General Questions
 
-### What is CareerFlow?
+### What is ProspectPath?
 
-CareerFlow is a comprehensive job application tracking system that helps job seekers organize and optimize their job search process. It provides tools for tracking applications, managing interviews, setting reminders, and visualizing job search progress.
+ProspectPath is a comprehensive job application tracking system that helps job seekers organize and optimize their job search process. It provides tools for tracking applications, managing interviews, setting reminders, and visualizing job search progress.
 
-### Is CareerFlow free to use?
+### Is ProspectPath free to use?
 
-Yes, the core features of CareerFlow are free to use. The application is currently in demo mode, which means all features are available without any restrictions.
+Yes, the core features of ProspectPath are free to use. The application is currently in demo mode, which means all features are available without any restrictions.
 
 ### Do I need to create an account?
 
-Yes, you need to create an account to use CareerFlow. However, in demo mode, you can use any email and password to create an account or log in.
+Yes, you need to create an account to use ProspectPath. However, in demo mode, you can use any email and password to create an account or log in.
 
 ### How is my data stored?
 
@@ -23,7 +22,7 @@ In the current implementation, all data is stored locally in your browser's loca
 - Clearing browser data will remove your saved information
 - Your data is not shared between different devices
 
-### Can I use CareerFlow on multiple devices?
+### Can I use ProspectPath on multiple devices?
 
 Since data is stored locally in your browser, your data won't automatically sync between devices. In a future version, cloud synchronization may be added.
 
@@ -53,7 +52,7 @@ Yes, you can create reminders for follow-ups:
 
 ### How do I prepare for interviews?
 
-CareerFlow includes an Interview Q&A feature:
+ProspectPath includes an Interview Q&A feature:
 1. Navigate to the Interview Q&A section
 2. Browse common interview questions
 3. Add your own questions and answers
@@ -112,9 +111,9 @@ In the current demo version, there is no need to delete accounts as all data is 
 
 ## Technical Questions
 
-### What technologies does CareerFlow use?
+### What technologies does ProspectPath use?
 
-CareerFlow is built with:
+ProspectPath is built with:
 - React
 - TypeScript
 - Vite
@@ -125,7 +124,7 @@ CareerFlow is built with:
 
 ### Can I contribute to the project?
 
-CareerFlow is currently a demo project. If it becomes open-source in the future, contribution guidelines will be provided.
+ProspectPath is currently a demo project. If it becomes open-source in the future, contribution guidelines will be provided.
 
 ### Is the application secure?
 
@@ -136,7 +135,7 @@ The current implementation uses localStorage which is:
 
 However, it's not encrypted, so sensitive information should be handled with care.
 
-### Does CareerFlow work offline?
+### Does ProspectPath work offline?
 
 Yes, once loaded, the application can function offline as it uses local browser storage for data management.
 

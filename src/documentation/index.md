@@ -1,7 +1,6 @@
+# ProspectPath Documentation Index
 
-# CareerFlow Documentation Index
-
-Welcome to the CareerFlow documentation. This comprehensive guide will help you understand how to use and develop for the CareerFlow application.
+Welcome to the ProspectPath documentation. This comprehensive guide will help you understand how to use and develop for the ProspectPath application.
 
 ## Documentation Sections
 
@@ -51,14 +50,14 @@ Welcome to the CareerFlow documentation. This comprehensive guide will help you 
 ## Quick Links
 
 - [Main Application Overview](../documentation.md)
-- [GitHub Repository](https://github.com/yourusername/careerflow)
-- [Live Demo](https://careerflow-demo.example.com)
+- [GitHub Repository](https://github.com/yourusername/prospectpath)
+- [Live Demo](https://prospectpath-demo.example.com)
 
 ## Version Information
 
 - Current Version: 1.0.0
 - Last Updated: April 2025
-- Created By: CareerFlow Team
+- Created By: ProspectPath Team
 
 ## How to Use This Documentation
 

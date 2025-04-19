@@ -1,9 +1,8 @@
-
-# CareerFlow Documentation
+# ProspectPath Documentation
 
 ## Overview
 
-CareerFlow is a comprehensive job tracking system that helps users manage their job application process. The application offers various features such as job application tracking, interview scheduling, analytics, and more.
+ProspectPath is a comprehensive job tracking system that helps users manage their job application process. The application offers various features such as job application tracking, interview scheduling, analytics, and more.
 
 ## Documentation Structure
 

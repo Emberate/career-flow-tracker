@@ -1,7 +1,6 @@
+# Getting Started with ProspectPath
 
-# Getting Started with CareerFlow
-
-This guide will help you understand how to use the CareerFlow application to effectively manage your job search process.
+This guide will help you understand how to use the ProspectPath application to effectively manage your job search process.
 
 ## Account Setup
 
@@ -80,7 +79,7 @@ This section helps you stay on top of follow-ups and deadlines.
 
 ## Job Application Workflow
 
-CareerFlow is designed to support the typical job application workflow:
+ProspectPath is designed to support the typical job application workflow:
 
 1. **Applied Stage**
    - Add new job applications with the status "Applied"

@@ -1,11 +1,10 @@
+# ProspectPath Data Management Documentation
 
-# CareerFlow Data Management Documentation
-
-This document explains how data is managed, stored, and processed within the CareerFlow application.
+This document explains how data is managed, stored, and processed within the ProspectPath application.
 
 ## Data Storage
 
-CareerFlow uses browser localStorage for data persistence. This approach was chosen for simplicity and to enable the application to function without requiring a backend server.
+ProspectPath uses browser localStorage for data persistence. This approach was chosen for simplicity and to enable the application to function without requiring a backend server.
 
 ### Key Data Entities
 

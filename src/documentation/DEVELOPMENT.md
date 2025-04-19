@@ -1,7 +1,6 @@
+# ProspectPath Development Documentation
 
-# CareerFlow Development Documentation
-
-This guide provides information for developers who want to understand, modify, or extend the CareerFlow application.
+This guide provides information for developers who want to understand, modify, or extend the ProspectPath application.
 
 ## Development Setup
 
@@ -15,7 +14,7 @@ This guide provides information for developers who want to understand, modify, o
 1. Clone the repository:
    ```bash
    git clone <repository-url>
-   cd careerflow
+   cd prospectpath
    ```
 
 2. Install dependencies:
@@ -41,12 +40,12 @@ The project follows a standard React application structure:
 ```
 src/
 ├── components/        # Reusable UI components
-├── context/           # React context providers
-├── hooks/             # Custom React hooks
-├── lib/               # Utility functions and libraries
-├── pages/             # Top-level page components
-├── types.ts           # TypeScript type definitions
-└── documentation/     # Project documentation
+├── context/          # React context providers
+├── hooks/            # Custom React hooks
+├── lib/              # Utility functions and libraries
+├── pages/            # Top-level page components
+├── types.ts          # TypeScript type definitions
+└── documentation/    # Project documentation
 ```
 
 ## Tech Stack
