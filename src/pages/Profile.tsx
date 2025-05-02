@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/Navbar';
@@ -18,39 +19,49 @@ import { useToast } from '@/components/ui/use-toast';
 import { User, Settings, Shield, CreditCard } from 'lucide-react';
 
 const Profile = () => {
-  const { user, isAuthenticated, updateUserProfile, logout } = useAuth();
+  const { user, profile, isAuthenticated, updateUserProfile, logout, isLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [name, setName] = useState(user?.name || '');
-  const [email, setEmail] = useState(user?.email || '');
+  const [fullName, setFullName] = useState('');
   const [isEditing, setIsEditing] = useState(false);
 
   // If user is not authenticated, redirect to login
-  React.useEffect(() => {
-    if (!isAuthenticated) {
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
       navigate('/login');
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, navigate, isLoading]);
 
-  const handleSaveProfile = () => {
-    updateUserProfile({ name, email });
+  // Update form state when profile data is loaded
+  useEffect(() => {
+    if (profile) {
+      setFullName(profile.full_name || '');
+    }
+  }, [profile]);
+
+  const handleSaveProfile = async () => {
+    await updateUserProfile({ full_name: fullName });
     setIsEditing(false);
-    toast({
-      title: "Profile updated",
-      description: "Your profile information has been saved.",
-    });
   };
 
   const handleDeleteAccount = () => {
-    // In a real app, we would make a server request
-    // For demo purposes, just log the user out
+    // In a real app, we would make a server request to delete the account
     toast({
-      title: "Account deleted",
-      description: "Your account has been deleted successfully.",
+      title: "Account deletion requested",
+      description: "Please contact support to complete account deletion.",
     });
-    logout();
-    navigate('/');
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-gray-50">
+        <Navbar />
+        <div className="flex-grow flex items-center justify-center">
+          <div className="animate-spin h-12 w-12 border-t-2 border-b-2 border-primary rounded-full"></div>
+        </div>
+      </div>
+    );
+  }
 
   if (!user) {
     return null;
@@ -97,8 +108,8 @@ const Profile = () => {
                       <Label htmlFor="name">Full Name</Label>
                       <Input 
                         id="name" 
-                        value={name} 
-                        onChange={(e) => setName(e.target.value)} 
+                        value={fullName} 
+                        onChange={(e) => setFullName(e.target.value)} 
                         placeholder="Enter your name" 
                       />
                     </div>
@@ -107,9 +118,9 @@ const Profile = () => {
                       <Input 
                         id="email" 
                         type="email" 
-                        value={email} 
-                        onChange={(e) => setEmail(e.target.value)} 
-                        placeholder="Enter your email" 
+                        value={user.email} 
+                        disabled
+                        className="bg-gray-100"
                       />
                     </div>
                   </>
@@ -118,7 +129,7 @@ const Profile = () => {
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <Label className="text-sm text-gray-500">Name</Label>
-                        <p className="text-lg">{user.name}</p>
+                        <p className="text-lg">{profile?.full_name || user.email?.split('@')[0] || 'No name set'}</p>
                       </div>
                       <div>
                         <Label className="text-sm text-gray-500">Email</Label>
@@ -169,7 +180,7 @@ const Profile = () => {
                   </div>
                   <div className="flex gap-2">
                     <Button variant="outline" className="text-xs">Connect LinkedIn</Button>
-                    <Button variant="outline" className="text-xs">Connect Indeed</Button>
+                    <Button variant="outline" className="text-xs">Connect Google</Button>
                   </div>
                 </div>
                 

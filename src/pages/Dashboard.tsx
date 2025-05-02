@@ -1,7 +1,9 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Job, JobState } from '../types';
+import { JobApplication } from '../types';
+import { supabase } from '@/integrations/supabase/client';
 import JobCard from '../components/JobCard';
 import JobForm from '../components/JobForm';
 import PageLayout from '../components/PageLayout';
@@ -58,92 +60,89 @@ import { useToast } from '@/components/ui/use-toast';
 import ExternalJobs from '../components/ExternalJobs';
 
 const Dashboard = () => {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  const [state, setState] = useState<JobState>({
-    jobs: [],
-    filteredJobs: [],
-    filters: {
-      status: null,
-      search: '',
-    },
+  const [jobApplications, setJobApplications] = useState<JobApplication[]>([]);
+  const [filteredJobs, setFilteredJobs] = useState<JobApplication[]>([]);
+  const [filters, setFilters] = useState({
+    status: null as string | null,
+    search: '',
   });
   
   const [isJobFormOpen, setIsJobFormOpen] = useState(false);
-  const [editingJob, setEditingJob] = useState<Job | null>(null);
+  const [editingJob, setEditingJob] = useState<JobApplication | null>(null);
   const [jobToDelete, setJobToDelete] = useState<string | null>(null);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("jobs");
   const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!authLoading && !isAuthenticated) {
       navigate('/login');
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, navigate, authLoading]);
   
   useEffect(() => {
-    const fetchJobs = async () => {
-      if (!user?.id) return;
+    if (user?.id) {
+      fetchJobApplications();
+    }
+  }, [user]);
+  
+  const fetchJobApplications = async () => {
+    try {
+      setIsLoading(true);
       
-      try {
-        setIsLoading(true);
-        
-        const savedJobs = localStorage.getItem(`jobs_${user.email}`);
-        if (savedJobs) {
-          const jobs = JSON.parse(savedJobs);
-          setState(prev => ({
-            ...prev,
-            jobs,
-            filteredJobs: jobs,
-          }));
-        }
-      } catch (error) {
-        console.error('Error fetching jobs:', error);
-        toast({
-          title: "Error loading jobs",
-          description: "Failed to load your job applications. Please try again.",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
+      const { data, error } = await supabase
+        .from('job_applications')
+        .select('*')
+        .order('application_date', { ascending: false });
+      
+      if (error) {
+        throw error;
       }
-    };
-    
-    fetchJobs();
-  }, [user, toast]);
+      
+      setJobApplications(data || []);
+      setFilteredJobs(data || []);
+    } catch (error) {
+      console.error('Error fetching job applications:', error);
+      toast({
+        title: "Error loading jobs",
+        description: "Failed to load your job applications. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
   
   useEffect(() => {
-    let filtered = [...state.jobs];
+    let filtered = [...jobApplications];
     
-    if (state.filters.status) {
-      filtered = filtered.filter(job => job.status === state.filters.status);
+    if (filters.status) {
+      filtered = filtered.filter(job => job.status === filters.status);
     }
     
-    if (state.filters.search) {
-      const searchTerm = state.filters.search.toLowerCase();
+    if (filters.search) {
+      const searchTerm = filters.search.toLowerCase();
       filtered = filtered.filter(job => 
         job.title.toLowerCase().includes(searchTerm) ||
         job.company.toLowerCase().includes(searchTerm) ||
-        job.notes.toLowerCase().includes(searchTerm) ||
-        job.tags.some(tag => tag.toLowerCase().includes(searchTerm))
+        (job.notes && job.notes.toLowerCase().includes(searchTerm)) ||
+        (job.tags && job.tags.some(tag => tag.toLowerCase().includes(searchTerm)))
       );
     }
     
-    setState(prev => ({
-      ...prev,
-      filteredJobs: filtered,
-    }));
-  }, [state.jobs, state.filters]);
+    setFilteredJobs(filtered);
+  }, [jobApplications, filters]);
   
   const handleAddJob = () => {
     setEditingJob(null);
     setIsJobFormOpen(true);
   };
   
-  const handleEditJob = (job: Job) => {
+  const handleEditJob = (job: JobApplication) => {
     setEditingJob(job);
     setIsJobFormOpen(true);
   };
@@ -156,14 +155,15 @@ const Dashboard = () => {
     if (!jobToDelete || !user?.id) return;
     
     try {
-      const updatedJobs = state.jobs.filter(job => job.id !== jobToDelete);
+      const { error } = await supabase
+        .from('job_applications')
+        .delete()
+        .eq('id', jobToDelete);
       
-      localStorage.setItem(`jobs_${user.email}`, JSON.stringify(updatedJobs));
+      if (error) throw error;
       
-      setState(prev => ({
-        ...prev,
-        jobs: updatedJobs,
-      }));
+      // Update state to remove the deleted job
+      setJobApplications(prevJobs => prevJobs.filter(job => job.id !== jobToDelete));
       
       toast({
         title: "Job deleted",
@@ -181,34 +181,57 @@ const Dashboard = () => {
     }
   };
   
-  const saveJob = async (job: Job) => {
+  const saveJob = async (job: any) => {
     if (!user?.id) return;
     
     try {
-      let updatedJobs: Job[];
+      // Convert the Job interface to JobApplication format
+      const jobApplication: Partial<JobApplication> = {
+        title: job.title,
+        company: job.company,
+        location: job.location,
+        status: job.status,
+        notes: job.notes,
+        url: job.jobLink,
+        salary: job.salary,
+        contact_name: job.contactName,
+        contact_email: job.contactEmail,
+        tags: job.tags,
+        user_id: user.id,
+      };
       
       if (editingJob) {
-        updatedJobs = state.jobs.map(j => j.id === job.id ? job : j);
+        // Update existing job
+        const { error } = await supabase
+          .from('job_applications')
+          .update(jobApplication)
+          .eq('id', editingJob.id);
+        
+        if (error) throw error;
         
         toast({
           title: "Job updated",
           description: "The job details have been updated successfully.",
         });
+        
+        // Refresh job list
+        fetchJobApplications();
       } else {
-        updatedJobs = [...state.jobs, job];
+        // Insert new job
+        const { error } = await supabase
+          .from('job_applications')
+          .insert([jobApplication]);
+        
+        if (error) throw error;
         
         toast({
           title: "Job added",
           description: "The new job has been added to your list.",
         });
+        
+        // Refresh job list
+        fetchJobApplications();
       }
-      
-      localStorage.setItem(`jobs_${user.email}`, JSON.stringify(updatedJobs));
-      
-      setState(prev => ({
-        ...prev,
-        jobs: updatedJobs,
-      }));
       
       setIsJobFormOpen(false);
     } catch (error) {
@@ -222,22 +245,16 @@ const Dashboard = () => {
   };
   
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setState(prev => ({
+    setFilters(prev => ({
       ...prev,
-      filters: {
-        ...prev.filters,
-        search: e.target.value,
-      },
+      search: e.target.value,
     }));
   };
   
   const handleStatusChange = (value: string) => {
-    setState(prev => ({
+    setFilters(prev => ({
       ...prev,
-      filters: {
-        ...prev.filters,
-        status: value === 'All' ? null : value,
-      },
+      status: value === 'All' ? null : value,
     }));
   };
   
@@ -245,11 +262,11 @@ const Dashboard = () => {
     setIsPaymentModalOpen(true);
   };
   
-  const totalJobs = state.jobs.length;
-  const appliedJobs = state.jobs.filter(j => j.status === 'Applied').length;
-  const interviewJobs = state.jobs.filter(j => j.status === 'Interview').length;
-  const offerJobs = state.jobs.filter(j => j.status === 'Offer').length;
-  const rejectedJobs = state.jobs.filter(j => j.status === 'Rejected').length;
+  const totalJobs = jobApplications.length;
+  const appliedJobs = jobApplications.filter(j => j.status === 'Applied').length;
+  const interviewJobs = jobApplications.filter(j => j.status === 'Interview').length;
+  const offerJobs = jobApplications.filter(j => j.status === 'Offer').length;
+  const rejectedJobs = jobApplications.filter(j => j.status === 'Rejected').length;
   
   return (
     <PageLayout title="Dashboard" className="bg-gray-50">
@@ -264,7 +281,7 @@ const Dashboard = () => {
           <div>
             <h2 className="text-xl font-bold text-gray-900 dashboard-text">My Job Tracker</h2>
             <p className="text-gray-600 mt-1 dashboard-text">
-              {user?.name ? `Welcome, ${user.name}` : 'Track and manage your job applications'}
+              {user?.email ? `Welcome, ${user.email.split('@')[0]}` : 'Track and manage your job applications'}
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -350,13 +367,13 @@ const Dashboard = () => {
                 <Input
                   placeholder="Search jobs..."
                   className="pl-10"
-                  value={state.filters.search}
+                  value={filters.search}
                   onChange={handleSearchChange}
                 />
               </div>
               <div className="w-full sm:w-48">
                 <Select
-                  value={state.filters.status || 'All'}
+                  value={filters.status || 'All'}
                   onValueChange={handleStatusChange}
                 >
                   <SelectTrigger>
@@ -384,9 +401,9 @@ const Dashboard = () => {
                 </svg>
                 <p className="mt-4 text-gray-600">Loading your job applications...</p>
               </div>
-            ) : state.filteredJobs.length > 0 ? (
+            ) : filteredJobs.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {state.filteredJobs.map(job => (
+                {filteredJobs.map(job => (
                   <JobCard
                     key={job.id}
                     job={job}
@@ -400,11 +417,11 @@ const Dashboard = () => {
                 <Briefcase className="mx-auto h-12 w-12 text-gray-400" />
                 <h3 className="mt-4 text-lg font-medium text-gray-900">No jobs found</h3>
                 <p className="mt-2 text-gray-500">
-                  {state.jobs.length === 0
+                  {jobApplications.length === 0
                     ? "You haven't added any jobs yet. Click 'Add Job' to get started."
                     : "No jobs match your current filters. Try adjusting your search."}
                 </p>
-                {state.jobs.length === 0 && (
+                {jobApplications.length === 0 && (
                   <Button onClick={handleAddJob} className="mt-4">
                     <Plus size={16} className="mr-2" />
                     Add Your First Job
@@ -526,7 +543,20 @@ const Dashboard = () => {
         isOpen={isJobFormOpen}
         onClose={() => setIsJobFormOpen(false)}
         onSave={saveJob}
-        editingJob={editingJob}
+        editingJob={editingJob ? {
+          id: editingJob.id,
+          title: editingJob.title,
+          company: editingJob.company,
+          location: editingJob.location || '',
+          status: editingJob.status,
+          dateApplied: editingJob.application_date,
+          notes: editingJob.notes || '',
+          jobLink: editingJob.url,
+          salary: editingJob.salary,
+          contactName: editingJob.contact_name,
+          contactEmail: editingJob.contact_email,
+          tags: editingJob.tags || []
+        } : null}
       />
       
       <PaymentModal

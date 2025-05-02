@@ -8,6 +8,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { Separator } from '@/components/ui/separator';
 import { Linkedin, Briefcase, Mail, AlertTriangle } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AuthFormProps {
   type: 'login' | 'signup';
@@ -30,41 +31,41 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
     try {
       if (type === 'login') {
         await login(email, password);
-        toast({
-          title: "Login successful",
-          description: "Welcome back to CareerFlow!",
-        });
       } else {
         await signup(email, name, password);
-        toast({
-          title: "Account created",
-          description: "Welcome to CareerFlow! Your account has been created.",
-        });
       }
       navigate('/dashboard');
     } catch (error) {
       console.error('Auth error:', error);
-      toast({
-        title: "Authentication error",
-        description: error instanceof Error ? error.message : "An error occurred during authentication",
-        variant: "destructive",
-      });
+      // Error handling is already done in the auth context
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleSocialLogin = (provider: string) => {
+  const handleSocialLogin = async (provider: string) => {
     setSocialLoading(provider);
     
-    // Simulate login delay
-    setTimeout(() => {
-      toast({
-        title: "Demo Mode",
-        description: `Social login with ${provider} is not available in demo mode. Please use email login.`,
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: provider.toLowerCase() as 'linkedin' | 'google',
+        options: {
+          redirectTo: `${window.location.origin}/dashboard`
+        }
       });
+      
+      if (error) throw error;
+      
+    } catch (error) {
+      console.error(`${provider} login error:`, error);
+      toast({
+        title: `${provider} login failed`,
+        description: "There was a problem logging in with your social account.",
+        variant: "destructive",
+      });
+    } finally {
       setSocialLoading(null);
-    }, 1000);
+    }
   };
 
   return (
@@ -75,9 +76,9 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
       
       <Alert variant="destructive" className="mb-6">
         <AlertTriangle className="h-4 w-4" />
-        <AlertTitle>Demo Mode</AlertTitle>
+        <AlertTitle>Important</AlertTitle>
         <AlertDescription>
-          This is a demo application. Use any email and password to login.
+          Enter any valid email and password (minimum 6 characters) to create an account.
         </AlertDescription>
       </Alert>
       
@@ -108,10 +109,10 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
         <Button 
           type="button" 
           className="w-full bg-[#003A9B] hover:bg-[#003A9B]/90" 
-          onClick={() => handleSocialLogin('Indeed')}
+          onClick={() => handleSocialLogin('Google')}
           disabled={!!socialLoading}
         >
-          {socialLoading === 'Indeed' ? (
+          {socialLoading === 'Google' ? (
             <span className="flex items-center justify-center">
               <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -122,7 +123,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
           ) : (
             <>
               <Briefcase className="mr-2 h-4 w-4" />
-              Continue with Indeed
+              Continue with Google
             </>
           )}
         </Button>

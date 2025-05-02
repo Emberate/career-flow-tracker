@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Job } from '../types';
+import { JobApplication } from '../types';
 import { Button } from '@/components/ui/button';
 import { 
   Calendar, 
@@ -14,8 +14,8 @@ import { formatDistanceToNow } from 'date-fns';
 import { useToast } from '@/components/ui/use-toast';
 
 interface JobCardProps {
-  job: Job;
-  onEdit: (job: Job) => void;
+  job: JobApplication;
+  onEdit: (job: JobApplication) => void;
   onDelete: (jobId: string) => void;
 }
 
@@ -37,7 +37,7 @@ const getStatusColor = (status: string) => {
 const JobCard: React.FC<JobCardProps> = ({ job, onEdit, onDelete }) => {
   const { toast } = useToast();
   const statusClass = getStatusColor(job.status);
-  const applied = new Date(job.dateApplied);
+  const applied = new Date(job.application_date);
   const timeAgo = formatDistanceToNow(applied, { addSuffix: true });
 
   const handleDelete = () => {
@@ -107,9 +107,9 @@ const JobCard: React.FC<JobCardProps> = ({ job, onEdit, onDelete }) => {
             </Button>
           </div>
           
-          {job.jobLink && (
+          {job.url && (
             <a 
-              href={job.jobLink}
+              href={job.url}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center text-primary hover:text-primary-dark hover:underline text-sm"
