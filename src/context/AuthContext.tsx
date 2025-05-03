@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -42,6 +41,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         if (currentSession?.user) {
           // Fetch user profile when session changes
+          // Use setTimeout to avoid potential deadlock with Supabase
           setTimeout(() => {
             fetchUserProfile(currentSession.user.id);
           }, 0);
@@ -74,7 +74,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .from('profiles')
         .select('*')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('Error fetching user profile:', error);
@@ -110,7 +110,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
         });
         
-        if (signUpError) throw signUpError;
+        if (signUpError) {
+          // If signup also fails, it could be a rate limit issue
+          if (signUpError.message.includes('rate limit')) {
+            throw new Error("Too many requests. Please try again in a moment.");
+          }
+          throw signUpError;
+        }
         
         // Try signing in again after creating the account
         const { error: retryError } = await supabase.auth.signInWithPassword({
@@ -128,11 +134,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
     } catch (error: any) {
       console.error('Login error:', error);
-      toast({
-        title: "Login failed",
-        description: error.message || "An error occurred during login",
-        variant: "destructive",
-      });
+      
+      // Handle rate limiting error specifically
+      if (error.message && error.message.includes('rate limit')) {
+        toast({
+          title: "Login temporarily unavailable",
+          description: "Please try again in a moment",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Login failed",
+          description: error.message || "An error occurred during login",
+          variant: "destructive",
+        });
+      }
       throw error;
     }
   };
@@ -151,7 +167,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         },
       });
 
-      if (signUpError) throw signUpError;
+      if (signUpError) {
+        // Handle rate limiting
+        if (signUpError.message.includes('rate limit')) {
+          throw new Error("Too many signup attempts. Please try again in a moment.");
+        }
+        throw signUpError;
+      }
       
       // Then immediately sign them in (no email verification)
       const { error: signInError } = await supabase.auth.signInWithPassword({

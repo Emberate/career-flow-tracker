@@ -17,6 +17,8 @@ const QuickLoginButton: React.FC<QuickLoginButtonProps> = ({ type }) => {
   const { toast } = useToast();
 
   const handleQuickLogin = async () => {
+    if (isLoading) return; // Prevent multiple clicks
+    
     setIsLoading(true);
     try {
       // Use dummy credentials
@@ -28,12 +30,19 @@ const QuickLoginButton: React.FC<QuickLoginButtonProps> = ({ type }) => {
       } else {
         await signup(email, "Demo User", password);
       }
+      
+      // Show success toast and navigate
+      toast({
+        title: "Success!",
+        description: `${type === 'login' ? 'Logged in' : 'Signed up'} successfully.`,
+      });
+      
       navigate('/dashboard');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Auth error:', error);
       toast({
         title: `Quick ${type} failed`,
-        description: "There was an issue with the authentication. Please try again.",
+        description: error.message || "There was an issue with the authentication. Please try again.",
         variant: "destructive",
       });
     } finally {
