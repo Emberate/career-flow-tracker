@@ -114,17 +114,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signup = async (email: string, name: string, password: string) => {
     try {
-      const { data, error } = await supabase.auth.signUp({
+      // Use sign in with password to automatically sign in after signup
+      // First create the user
+      const { error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: {
             name: name,
           },
+          // Set emailRedirectTo to current origin to avoid redirection issues
+          emailRedirectTo: `${window.location.origin}/dashboard`,
         },
       });
 
-      if (error) throw error;
+      if (signUpError) throw signUpError;
+      
+      // Then immediately sign them in (since we're not verifying email)
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      
+      if (signInError) throw signInError;
       
       toast({
         title: "Signup successful",

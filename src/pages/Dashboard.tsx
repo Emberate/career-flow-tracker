@@ -185,7 +185,7 @@ const Dashboard = () => {
     
     try {
       // Convert the Job interface to JobApplication format
-      const jobApplication: Partial<JobApplication> = {
+      const jobApplication = {
         title: job.title,
         company: job.company,
         location: job.location,
@@ -197,6 +197,8 @@ const Dashboard = () => {
         contact_email: job.contactEmail,
         tags: job.tags,
         user_id: user.id,
+        application_date: job.dateApplied,
+        interviewDate: job.interviewDate
       };
       
       if (editingJob) {
