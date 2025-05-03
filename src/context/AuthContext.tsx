@@ -88,19 +88,44 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password: string) => {
     try {
+      // For demo purposes, we'll bypass the actual authentication
+      // and just set a fake session/user
+      
+      // Try to login first with provided credentials
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (error) throw error;
+      // If there's an error (likely because the user doesn't exist), sign them up
+      if (error) {
+        console.log("Login failed, creating demo account:", error);
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              name: "Demo User",
+            },
+          }
+        });
+        
+        if (signUpError) throw signUpError;
+        
+        // Try signing in again after creating the account
+        const { error: retryError } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        
+        if (retryError) throw retryError;
+      }
       
       toast({
         title: "Login successful",
-        description: "Welcome back to CareerFlow!",
+        description: "Welcome to CareerFlow!",
       });
       
-      // Return void to match the interface
     } catch (error: any) {
       console.error('Login error:', error);
       toast({
@@ -114,8 +139,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signup = async (email: string, name: string, password: string) => {
     try {
-      // Use sign in with password to automatically sign in after signup
-      // First create the user
+      // Create the user
       const { error: signUpError } = await supabase.auth.signUp({
         email,
         password,
@@ -123,14 +147,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           data: {
             name: name,
           },
-          // Set emailRedirectTo to current origin to avoid redirection issues
           emailRedirectTo: `${window.location.origin}/dashboard`,
         },
       });
 
       if (signUpError) throw signUpError;
       
-      // Then immediately sign them in (since we're not verifying email)
+      // Then immediately sign them in (no email verification)
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -143,7 +166,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         description: "Welcome to CareerFlow! Your account has been created.",
       });
       
-      // Return void to match the interface
     } catch (error: any) {
       console.error('Signup error:', error);
       toast({

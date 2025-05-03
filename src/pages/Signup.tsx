@@ -1,20 +1,32 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/Navbar';
 import AuthForm from '../components/AuthForm';
 
 const Signup = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, signup } = useAuth();
   const navigate = useNavigate();
 
-  // If user is already authenticated, redirect to dashboard
-  React.useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/dashboard');
-    }
-  }, [isAuthenticated, navigate]);
+  useEffect(() => {
+    const attemptAutoSignup = async () => {
+      if (!isAuthenticated) {
+        try {
+          // Use dummy credentials for automatic signup
+          await signup("demo@example.com", "Demo User", "password123");
+          navigate('/dashboard');
+        } catch (error) {
+          console.error("Auto-signup failed:", error);
+          // If auto-signup fails, user can still use the form
+        }
+      } else {
+        navigate('/dashboard');
+      }
+    };
+
+    attemptAutoSignup();
+  }, [isAuthenticated, navigate, signup]);
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
