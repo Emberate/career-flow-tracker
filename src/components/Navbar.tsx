@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -218,17 +217,17 @@ const Navbar = () => {
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary dark:bg-gray-800 text-white">
-                            {user?.name?.charAt(0).toUpperCase()}
+                            {user?.email?.charAt(0).toUpperCase()}
                           </div>
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-56 dark:bg-gray-900">
                         <div className="flex items-center justify-start gap-2 p-2">
                           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary dark:bg-gray-800 text-white">
-                            {user?.name?.charAt(0).toUpperCase()}
+                            {user?.email?.charAt(0).toUpperCase()}
                           </div>
                           <div className="flex flex-col space-y-1 leading-none">
-                            <p className="font-medium dark:text-white">{user?.name}</p>
+                            <p className="font-medium dark:text-white">{user?.email?.split('@')[0]}</p>
                             <p className="text-xs text-muted-foreground">{user?.email}</p>
                           </div>
                         </div>
@@ -277,4 +276,3 @@ const Navbar = () => {
 };
 
 export default Navbar;
-

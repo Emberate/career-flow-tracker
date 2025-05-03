@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -220,7 +219,7 @@ const Dashboard = () => {
         // Insert new job
         const { error } = await supabase
           .from('job_applications')
-          .insert([jobApplication]);
+          .insert(jobApplication);
         
         if (error) throw error;
         

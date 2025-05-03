@@ -100,7 +100,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         description: "Welcome back to CareerFlow!",
       });
       
-      return data;
+      // Return void to match the interface
     } catch (error: any) {
       console.error('Login error:', error);
       toast({
@@ -131,7 +131,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         description: "Welcome to CareerFlow! Your account has been created.",
       });
       
-      return data;
+      // Return void to match the interface
     } catch (error: any) {
       console.error('Signup error:', error);
       toast({

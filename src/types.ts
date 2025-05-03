@@ -1,3 +1,4 @@
+
 export interface Job {
   id: string;
   title: string;
@@ -11,6 +12,7 @@ export interface Job {
   contactName?: string;
   contactEmail?: string;
   tags: string[];
+  interviewDate?: string; // Add this property
 }
 
 export interface InterviewQuestion {
@@ -49,4 +51,5 @@ export interface JobApplication {
   contact_email?: string;
   tags?: string[];
   updated_at?: string;
+  interviewDate?: string; // Add this property
 }
