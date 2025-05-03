@@ -2,7 +2,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 interface UserProfile {
   id: string;
@@ -88,10 +88,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password: string) => {
     try {
-      // For demo purposes, we'll bypass the actual authentication
-      // and just set a fake session/user
-      
-      // Try to login first with provided credentials
+      // For demo purposes, we'll create a user if it doesn't exist, then sign in
+      // First try to login with provided credentials
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -100,6 +98,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // If there's an error (likely because the user doesn't exist), sign them up
       if (error) {
         console.log("Login failed, creating demo account:", error);
+        
+        // Try to create the account
         const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
           email,
           password,
