@@ -21,8 +21,8 @@ const QuickLoginButton: React.FC<QuickLoginButtonProps> = ({ type }) => {
     
     setIsLoading(true);
     try {
-      // Use dummy credentials
-      const email = "demo@example.com";
+      // Use valid email format credentials
+      const email = "demo.user@example.com";
       const password = "password123";
 
       if (type === 'login') {

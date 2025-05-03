@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -88,8 +89,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password: string) => {
     try {
-      // For demo purposes, we'll create a user if it doesn't exist, then sign in
-      // First try to login with provided credentials
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -135,11 +134,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (error: any) {
       console.error('Login error:', error);
       
-      // Handle rate limiting error specifically
+      // Handle specific errors
       if (error.message && error.message.includes('rate limit')) {
         toast({
           title: "Login temporarily unavailable",
           description: "Please try again in a moment",
+          variant: "destructive",
+        });
+      } else if (error.message && error.message.includes('invalid')) {
+        toast({
+          title: "Login failed",
+          description: "Please check your email format and try again",
           variant: "destructive",
         });
       } else {
@@ -168,9 +173,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (signUpError) {
-        // Handle rate limiting
+        // Handle specific errors
         if (signUpError.message.includes('rate limit')) {
           throw new Error("Too many signup attempts. Please try again in a moment.");
+        } else if (signUpError.message.includes('invalid')) {
+          throw new Error("Please use a valid email format.");
         }
         throw signUpError;
       }
