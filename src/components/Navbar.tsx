@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '../context/AuthContext';
 import { useIsMobile } from '../hooks/use-mobile';
@@ -25,8 +25,14 @@ const Navbar = () => {
   const { isAuthenticated, logout, user } = useAuth();
   const isMobile = useIsMobile();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+
+  const handleDashboardClick = () => {
+    navigate('/dashboard');
+    if (isMenuOpen) setIsMenuOpen(false);
+  };
 
   return (
     <header className="sticky top-0 z-50 border-b border-gray-800 dark:border-gray-800 bg-white dark:bg-black/90 backdrop-blur-md">
@@ -82,10 +88,12 @@ const Navbar = () => {
                       </Link>
                     </li>
                     <li>
-                      <Link to="/dashboard" className="text-gray-600 dark:text-gray-300 hover:text-primary block py-2 font-bold"
-                        onClick={() => setIsMenuOpen(false)}>
+                      <Button 
+                        onClick={handleDashboardClick}
+                        className="w-full justify-start text-left bg-primary/10 hover:bg-primary/20 text-primary py-2"
+                      >
                         Dashboard
-                      </Link>
+                      </Button>
                     </li>
                   </ul>
                 </nav>
@@ -175,9 +183,9 @@ const Navbar = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/dashboard" className="text-primary font-medium hover:text-primary/80">
+                <Button onClick={handleDashboardClick} className="bg-primary hover:bg-primary/90 text-white">
                   Dashboard
-                </Link>
+                </Button>
               </li>
             </ul>
           </nav>
