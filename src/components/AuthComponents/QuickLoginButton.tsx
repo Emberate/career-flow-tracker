@@ -16,19 +16,19 @@ const QuickLoginButton: React.FC<QuickLoginButtonProps> = ({ type }) => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Using a guaranteed valid email format that works with Supabase
+  const validEmail = "user@example.com"; 
+  const password = "password123";
+
   const handleQuickLogin = async () => {
     if (isLoading) return; // Prevent multiple clicks
     
     setIsLoading(true);
     try {
-      // Use valid email format credentials
-      const email = "demo.user@example.com";
-      const password = "password123";
-
       if (type === 'login') {
-        await login(email, password);
+        await login(validEmail, password);
       } else {
-        await signup(email, "Demo User", password);
+        await signup(validEmail, "Demo User", password);
       }
       
       // Show success toast and navigate
