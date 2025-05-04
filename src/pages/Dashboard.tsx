@@ -76,23 +76,88 @@ const Dashboard = () => {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("jobs");
   const [isLoading, setIsLoading] = useState(true);
+  const [isDemoMode, setIsDemoMode] = useState(false);
   
   useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
+    // Check if the user came from the demo login
+    const demoMode = sessionStorage.getItem('demoMode') === 'true';
+    setIsDemoMode(demoMode);
+    
+    // Only redirect if not in demo mode and not authenticated
+    if (!authLoading && !isAuthenticated && !demoMode) {
       navigate('/login');
     }
   }, [isAuthenticated, navigate, authLoading]);
   
   useEffect(() => {
-    if (user?.id) {
+    // Load job applications regardless of auth status in demo mode
+    if (user?.id || isDemoMode) {
       fetchJobApplications();
     }
-  }, [user]);
+  }, [user, isDemoMode]);
   
   const fetchJobApplications = async () => {
     try {
       setIsLoading(true);
       
+      // In demo mode, use sample data instead of fetching from Supabase
+      if (isDemoMode) {
+        // Sample job application data
+        const sampleData: JobApplication[] = [
+          {
+            id: '1',
+            title: 'Frontend Developer',
+            company: 'Tech Solutions Inc.',
+            location: 'San Francisco, CA',
+            status: 'Applied',
+            notes: 'Submitted application on company website',
+            url: 'https://example.com/jobs',
+            salary: '$120,000 - $140,000',
+            contact_name: 'Jane Smith',
+            contact_email: 'jane@techsolutions.com',
+            tags: ['React', 'TypeScript'],
+            application_date: '2025-04-15',
+            user_id: 'demo',
+          },
+          {
+            id: '2',
+            title: 'Full Stack Engineer',
+            company: 'Innovate Labs',
+            location: 'Remote',
+            status: 'Interview',
+            notes: 'Technical interview scheduled for next week',
+            url: 'https://example.com/jobs',
+            salary: '$130,000 - $150,000',
+            contact_name: 'John Doe',
+            contact_email: 'john@innovatelabs.com',
+            tags: ['Node.js', 'React', 'MongoDB'],
+            application_date: '2025-04-10',
+            user_id: 'demo',
+            interviewDate: '2025-05-10',
+          },
+          {
+            id: '3',
+            title: 'Product Manager',
+            company: 'Growth Startup',
+            location: 'New York, NY',
+            status: 'Offer',
+            notes: 'Received offer, negotiating salary',
+            url: 'https://example.com/jobs',
+            salary: '$140,000 - $160,000',
+            contact_name: 'Lisa Johnson',
+            contact_email: 'lisa@growthstartup.com',
+            tags: ['Product', 'Agile', 'SaaS'],
+            application_date: '2025-04-05',
+            user_id: 'demo',
+          }
+        ];
+        setJobApplications(sampleData);
+        setFilteredJobs(sampleData);
+        setIsLoading(false);
+        return;
+      }
+      
+      // Regular flow for authenticated users
       const { data, error } = await supabase
         .from('job_applications')
         .select('*')
@@ -151,9 +216,21 @@ const Dashboard = () => {
   };
   
   const confirmDelete = async () => {
-    if (!jobToDelete || !user?.id) return;
+    if (!jobToDelete || (!user?.id && !isDemoMode)) return;
     
     try {
+      if (isDemoMode) {
+        // Just update state for demo mode
+        setJobApplications(prevJobs => prevJobs.filter(job => job.id !== jobToDelete));
+        toast({
+          title: "Job deleted",
+          description: "The job has been removed from your list.",
+        });
+        setJobToDelete(null);
+        return;
+      }
+      
+      // Regular flow for authenticated users
       const { error } = await supabase
         .from('job_applications')
         .delete()
@@ -181,7 +258,7 @@ const Dashboard = () => {
   };
   
   const saveJob = async (job: any) => {
-    if (!user?.id) return;
+    if (!user?.id && !isDemoMode) return;
     
     try {
       // Convert the Job interface to JobApplication format
@@ -196,11 +273,42 @@ const Dashboard = () => {
         contact_name: job.contactName,
         contact_email: job.contactEmail,
         tags: job.tags,
-        user_id: user.id,
+        user_id: user?.id || 'demo',
         application_date: job.dateApplied,
         interviewDate: job.interviewDate
       };
       
+      if (isDemoMode) {
+        // Handle job saving in demo mode
+        if (editingJob) {
+          // Update existing job in demo mode
+          setJobApplications(prevJobs => 
+            prevJobs.map(j => j.id === editingJob.id 
+              ? { ...jobApplication, id: editingJob.id } 
+              : j
+            )
+          );
+          toast({
+            title: "Job updated",
+            description: "The job details have been updated successfully.",
+          });
+        } else {
+          // Add new job in demo mode
+          const newJob = {
+            ...jobApplication,
+            id: `demo-${Date.now()}`,
+          };
+          setJobApplications(prevJobs => [newJob, ...prevJobs]);
+          toast({
+            title: "Job added",
+            description: "The new job has been added to your list.",
+          });
+        }
+        setIsJobFormOpen(false);
+        return;
+      }
+      
+      // Regular flow for authenticated users
       if (editingJob) {
         // Update existing job
         const { error } = await supabase
@@ -282,7 +390,9 @@ const Dashboard = () => {
           <div>
             <h2 className="text-xl font-bold text-gray-900 dashboard-text">My Job Tracker</h2>
             <p className="text-gray-600 mt-1 dashboard-text">
-              {user?.email ? `Welcome, ${user.email.split('@')[0]}` : 'Track and manage your job applications'}
+              {isDemoMode ? 'Demo Mode - Welcome!' : 
+                user?.email ? `Welcome, ${user.email.split('@')[0]}` : 
+                'Track and manage your job applications'}
             </p>
           </div>
           <div className="flex flex-wrap gap-3">

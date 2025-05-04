@@ -10,6 +10,9 @@ const Login = () => {
   const { toast } = useToast();
 
   const handleDemoLogin = () => {
+    // Set demo mode flag in session storage
+    sessionStorage.setItem('demoMode', 'true');
+    
     // Simple demo login - in a real app this would validate credentials
     toast({
       title: "Demo login successful",
