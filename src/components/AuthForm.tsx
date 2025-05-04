@@ -5,8 +5,6 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, User } from 'lucide-react';
-import AuthAlert from './AuthComponents/AuthAlert';
-import SocialButtons from './AuthComponents/SocialButtons';
 import AuthFooter from './AuthComponents/AuthFooter';
 
 interface AuthFormProps {
@@ -19,17 +17,31 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
     setIsLoading(true);
     
     // Simple frontend-only authentication simulation
     setTimeout(() => {
       console.log('Form submitted with:', { email, password, username });
-      // In a real app, you would handle authentication here
       
-      // Simulate successful login/signup
+      // Basic validation
+      if (!email.includes('@')) {
+        setError('Please enter a valid email address');
+        setIsLoading(false);
+        return;
+      }
+      
+      if (password.length < 6) {
+        setError('Password must be at least 6 characters');
+        setIsLoading(false);
+        return;
+      }
+      
+      // Simulate successful login/signup - always direct to dashboard
       navigate('/dashboard');
       setIsLoading(false);
     }, 1000);
@@ -41,7 +53,11 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
         {type === 'login' ? 'Log In to Your Account' : 'Create Your Account'}
       </h2>
       
-      <AuthAlert />
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+          {error}
+        </div>
+      )}
       
       {/* Regular login/signup form */}
       <form onSubmit={handleSubmit} className="space-y-4 mb-6">
@@ -117,12 +133,25 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
       <div className="relative my-6">
         <Separator />
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="bg-white px-2 text-sm text-gray-500">or use social login</span>
+          <span className="bg-white px-2 text-sm text-gray-500">or</span>
         </div>
       </div>
       
-      {/* Social Login Buttons */}
-      <SocialButtons />
+      <div className="text-center">
+        <p className="text-sm text-gray-600 mb-4">
+          Just want to try it out?
+        </p>
+        <Button 
+          variant="outline" 
+          onClick={() => {
+            // Simulate demo login - directly navigate to dashboard
+            navigate('/dashboard');
+          }}
+          className="w-full"
+        >
+          Continue as Demo User
+        </Button>
+      </div>
       
       <AuthFooter type={type} />
     </div>
