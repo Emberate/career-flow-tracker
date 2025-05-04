@@ -1,7 +1,5 @@
 
 import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/Navbar';
 import HeroSection from '../components/HeroSection';
 import FeaturesSection from '../components/FeaturesSection';
@@ -10,14 +8,7 @@ import TestimonialsSection from '../components/TestimonialsSection';
 import Footer from '../components/Footer';
 
 const Index = () => {
-  const { isAuthenticated } = useAuth();
-  const navigate = useNavigate();
-
-  // If user is already authenticated, redirect to dashboard
   useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/dashboard');
-    }
     // Apply dark mode class to body for homepage
     document.documentElement.classList.add('dark');
     
@@ -34,7 +25,7 @@ const Index = () => {
       document.documentElement.classList.remove('dark');
       document.body.classList.remove('animations-ready');
     };
-  }, [isAuthenticated, navigate]);
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col bg-black overflow-x-hidden">
