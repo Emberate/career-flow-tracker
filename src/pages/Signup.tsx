@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import AuthForm from '../components/AuthForm';
 import { useNavigate } from 'react-router-dom';
@@ -9,6 +9,13 @@ import { useToast } from '@/hooks/use-toast';
 const Signup = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Redirect if already in demo mode
+  useEffect(() => {
+    if (sessionStorage.getItem('demoMode') === 'true') {
+      navigate('/dashboard');
+    }
+  }, [navigate]);
 
   const handleDemoSignup = () => {
     // Set demo mode flag in session storage

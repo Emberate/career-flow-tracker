@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, User } from 'lucide-react';
 import AuthFooter from './AuthComponents/AuthFooter';
+import { useToast } from '@/hooks/use-toast';
 
 interface AuthFormProps {
   type: 'login' | 'signup';
@@ -13,6 +14,7 @@ interface AuthFormProps {
 
 const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
@@ -41,6 +43,15 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
         return;
       }
       
+      // Set demo mode flag in session storage
+      sessionStorage.setItem('demoMode', 'true');
+
+      // Show success message
+      toast({
+        title: type === 'login' ? "Login successful" : "Account created successfully",
+        description: "Welcome to the dashboard!",
+      });
+
       // Simulate successful login/signup - always direct to dashboard
       navigate('/dashboard');
       setIsLoading(false);
@@ -130,28 +141,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
         </Button>
       </form>
       
-      <div className="relative my-6">
-        <Separator />
-        <div className="absolute inset-0 flex items-center justify-center">
-          <span className="bg-white px-2 text-sm text-gray-500">or</span>
-        </div>
-      </div>
-      
-      <div className="text-center">
-        <p className="text-sm text-gray-600 mb-4">
-          Just want to try it out?
-        </p>
-        <Button 
-          variant="outline" 
-          onClick={() => {
-            // Simulate demo login - directly navigate to dashboard
-            navigate('/dashboard');
-          }}
-          className="w-full"
-        >
-          Continue as Demo User
-        </Button>
-      </div>
+      {/* Remove demo user section from here as it's already in the Login/Signup pages */}
       
       <AuthFooter type={type} />
     </div>

@@ -28,6 +28,13 @@ const Login = () => {
     }, 800);
   };
 
+  // Redirect if already in demo mode
+  React.useEffect(() => {
+    if (sessionStorage.getItem('demoMode') === 'true') {
+      navigate('/dashboard');
+    }
+  }, [navigate]);
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Navbar />
