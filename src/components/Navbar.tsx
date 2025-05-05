@@ -34,6 +34,30 @@ const Navbar = () => {
     if (isMenuOpen) setIsMenuOpen(false);
   };
 
+  const handleSignIn = () => {
+    navigate('/login');
+    if (isMenuOpen) setIsMenuOpen(false);
+  };
+  
+  const handleSignUp = () => {
+    navigate('/signup');
+    if (isMenuOpen) setIsMenuOpen(false);
+  };
+
+  const isDemoMode = () => {
+    return sessionStorage.getItem('demoMode') === 'true';
+  };
+
+  const handleLogout = () => {
+    if (isDemoMode()) {
+      sessionStorage.removeItem('demoMode');
+    } else if (logout) {
+      logout();
+    }
+    navigate('/');
+    if (isMenuOpen) setIsMenuOpen(false);
+  };
+
   return (
     <header className="sticky top-0 z-50 border-b border-gray-800 dark:border-gray-800 bg-white dark:bg-black/90 backdrop-blur-md">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
@@ -87,14 +111,47 @@ const Navbar = () => {
                         Support
                       </Link>
                     </li>
-                    <li>
-                      <Button 
-                        onClick={handleDashboardClick}
-                        className="w-full justify-start text-left bg-primary/10 hover:bg-primary/20 text-primary py-2"
-                      >
-                        Dashboard
-                      </Button>
-                    </li>
+                    {isAuthenticated || isDemoMode() ? (
+                      <>
+                        <li>
+                          <Button 
+                            onClick={handleDashboardClick}
+                            className="w-full justify-start text-left bg-primary/10 hover:bg-primary/20 text-primary py-2"
+                          >
+                            Dashboard
+                          </Button>
+                        </li>
+                        <li>
+                          <Button 
+                            onClick={handleLogout}
+                            variant="ghost"
+                            className="w-full justify-start text-left text-red-500 hover:bg-red-50 py-2"
+                          >
+                            Logout
+                          </Button>
+                        </li>
+                      </>
+                    ) : (
+                      <>
+                        <li>
+                          <Button 
+                            onClick={handleSignIn}
+                            variant="outline"
+                            className="w-full justify-start text-left py-2 mb-2"
+                          >
+                            Log In
+                          </Button>
+                        </li>
+                        <li>
+                          <Button 
+                            onClick={handleSignUp}
+                            className="w-full justify-start text-left py-2"
+                          >
+                            Sign Up
+                          </Button>
+                        </li>
+                      </>
+                    )}
                   </ul>
                 </nav>
               </div>
@@ -182,11 +239,33 @@ const Navbar = () => {
                   Pricing
                 </Link>
               </li>
-              <li>
-                <Button onClick={handleDashboardClick} className="bg-primary hover:bg-primary/90 text-white">
-                  Dashboard
-                </Button>
-              </li>
+              {isAuthenticated || isDemoMode() ? (
+                <>
+                  <li>
+                    <Button onClick={handleDashboardClick} className="bg-primary hover:bg-primary/90 text-white">
+                      Dashboard
+                    </Button>
+                  </li>
+                  <li>
+                    <Button onClick={handleLogout} variant="ghost" className="text-red-500 hover:bg-red-50">
+                      Logout
+                    </Button>
+                  </li>
+                </>
+              ) : (
+                <>
+                  <li>
+                    <Button onClick={handleSignIn} variant="outline" className="mr-2">
+                      Log In
+                    </Button>
+                  </li>
+                  <li>
+                    <Button onClick={handleSignUp} className="bg-primary hover:bg-primary/90 text-white">
+                      Sign Up
+                    </Button>
+                  </li>
+                </>
+              )}
             </ul>
           </nav>
         )}

@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 interface AuthFooterProps {
   type: 'login' | 'signup';
@@ -11,16 +12,16 @@ const AuthFooter: React.FC<AuthFooterProps> = ({ type }) => {
       {type === 'login' ? (
         <p>
           Don't have an account?{' '}
-          <a href="/signup" className="text-primary font-medium hover:underline">
+          <Link to="/signup" className="text-primary font-medium hover:underline">
             Sign up
-          </a>
+          </Link>
         </p>
       ) : (
         <p>
           Already have an account?{' '}
-          <a href="/login" className="text-primary font-medium hover:underline">
+          <Link to="/login" className="text-primary font-medium hover:underline">
             Log in
-          </a>
+          </Link>
         </p>
       )}
     </div>
