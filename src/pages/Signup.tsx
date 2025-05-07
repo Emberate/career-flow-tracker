@@ -1,15 +1,25 @@
 
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
-import AuthForm from '../components/AuthForm';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent } from '@/components/ui/card';
+import { SignUp, useAuth } from '@clerk/clerk-react';
+import { Loader2 } from 'lucide-react';
 
 const Signup = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { isLoaded, userId } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Redirect if already authenticated with Clerk
+  useEffect(() => {
+    if (isLoaded && userId) {
+      navigate('/dashboard');
+    }
+  }, [isLoaded, userId, navigate]);
 
   // Redirect if already in demo mode
   useEffect(() => {
@@ -19,19 +29,23 @@ const Signup = () => {
   }, [navigate]);
 
   const handleDemoSignup = () => {
+    setIsLoading(true);
     // Set demo mode flag in session storage
     sessionStorage.setItem('demoMode', 'true');
     
     // Simple demo signup - in a real app this would create an account
-    toast({
-      title: "Demo account created",
-      description: "Welcome to the dashboard!",
-    });
-    navigate('/dashboard');
+    setTimeout(() => {
+      toast({
+        title: "Demo account created",
+        description: "Welcome to the dashboard!",
+      });
+      navigate('/dashboard');
+      setIsLoading(false);
+    }, 800);
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-blue-50 to-indigo-50">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b bg-blue-50">
       <Navbar />
       <div className="flex-grow flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
         {/* Decorative elements */}
@@ -45,7 +59,26 @@ const Signup = () => {
               <p className="text-gray-500">Join us to start your journey</p>
             </div>
             
-            <AuthForm type="signup" />
+            <div className="mb-6">
+              {isLoaded ? (
+                <SignUp 
+                  appearance={{
+                    elements: {
+                      rootBox: "w-full mx-auto",
+                      card: "shadow-none p-0 border-0 bg-transparent",
+                      header: "pb-2",
+                      footer: "hidden"
+                    }
+                  }}
+                  redirectUrl="/dashboard" 
+                  signInUrl="/login"
+                />
+              ) : (
+                <div className="w-full flex justify-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+                </div>
+              )}
+            </div>
             
             <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">
@@ -61,8 +94,19 @@ const Signup = () => {
             <Button 
               className="w-full py-6 text-lg transition-all hover:shadow-md bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700"
               onClick={handleDemoSignup}
+              disabled={isLoading}
             >
-              Skip & Continue to Dashboard
+              {isLoading ? (
+                <span className="flex items-center justify-center">
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Processing...
+                </span>
+              ) : (
+                "Skip & Continue to Dashboard"
+              )}
             </Button>
           </CardContent>
         </Card>

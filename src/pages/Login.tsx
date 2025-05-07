@@ -1,16 +1,32 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import Navbar from '../components/Navbar';
 import { useToast } from '@/hooks/use-toast';
-import AuthForm from '../components/AuthForm';
 import { Card, CardContent } from '@/components/ui/card';
+import { SignIn, useAuth } from '@clerk/clerk-react';
+import { Loader2 } from 'lucide-react';
 
 const Login = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { isLoaded, userId } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+
+  // Redirect if already authenticated with Clerk
+  React.useEffect(() => {
+    if (isLoaded && userId) {
+      navigate('/dashboard');
+    }
+  }, [isLoaded, userId, navigate]);
+
+  // Redirect if already in demo mode
+  React.useEffect(() => {
+    if (sessionStorage.getItem('demoMode') === 'true') {
+      navigate('/dashboard');
+    }
+  }, [navigate]);
 
   const handleDemoLogin = () => {
     setIsLoading(true);
@@ -29,15 +45,8 @@ const Login = () => {
     }, 800);
   };
 
-  // Redirect if already in demo mode
-  React.useEffect(() => {
-    if (sessionStorage.getItem('demoMode') === 'true') {
-      navigate('/dashboard');
-    }
-  }, [navigate]);
-
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-blue-50 to-indigo-50">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b bg-blue-50">
       <Navbar />
       <div className="flex-grow flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
         {/* Decorative elements */}
@@ -51,7 +60,26 @@ const Login = () => {
               <p className="text-gray-500">Sign in to your account to continue</p>
             </div>
             
-            <AuthForm type="login" />
+            <div className="mb-6">
+              {isLoaded ? (
+                <SignIn 
+                  appearance={{
+                    elements: {
+                      rootBox: "w-full mx-auto",
+                      card: "shadow-none p-0 border-0 bg-transparent",
+                      header: "pb-2",
+                      footer: "hidden"
+                    }
+                  }}
+                  redirectUrl="/dashboard" 
+                  signUpUrl="/signup"
+                />
+              ) : (
+                <div className="w-full flex justify-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+                </div>
+              )}
+            </div>
             
             <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">
