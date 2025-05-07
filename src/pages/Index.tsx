@@ -6,15 +6,30 @@ import FeaturesSection from '../components/FeaturesSection';
 import HowItWorksSection from '../components/HowItWorksSection';
 import TestimonialsSection from '../components/TestimonialsSection';
 import Footer from '../components/Footer';
+import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
+  const { toast } = useToast();
+  
   useEffect(() => {
     // Apply dark mode class to body for homepage
     document.documentElement.classList.add('dark');
     
+    // Welcome toast for first-time visitors
+    const hasVisited = localStorage.getItem('hasVisitedBefore');
+    if (!hasVisited) {
+      setTimeout(() => {
+        toast({
+          title: "Welcome to ProspectPath",
+          description: "Explore our platform designed to boost your career journey!",
+          duration: 5000,
+        });
+        localStorage.setItem('hasVisitedBefore', 'true');
+      }, 1500);
+    }
+    
     // Initialize animations
     const initAnimations = () => {
-      // Add any global animation initialization here if needed
       document.body.classList.add('animations-ready');
     };
     
@@ -25,7 +40,7 @@ const Index = () => {
       document.documentElement.classList.remove('dark');
       document.body.classList.remove('animations-ready');
     };
-  }, []);
+  }, [toast]);
 
   return (
     <div className="min-h-screen flex flex-col bg-black overflow-x-hidden">
