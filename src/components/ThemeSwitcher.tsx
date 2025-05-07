@@ -12,7 +12,10 @@ interface ThemeOption {
   background: string;
   card: string;
   text: string;
-  gradient?: string;
+  gradient?: {
+    from: string;
+    to: string;
+  };
 }
 
 const themes: ThemeOption[] = [
@@ -22,7 +25,10 @@ const themes: ThemeOption[] = [
     background: 'bg-gray-100',
     card: 'bg-white',
     text: 'text-gray-900',
-    gradient: 'from-blue-50 to-indigo-50'
+    gradient: {
+      from: 'from-blue-50',
+      to: 'to-indigo-50'
+    }
   },
   {
     name: 'Dark',
@@ -30,7 +36,10 @@ const themes: ThemeOption[] = [
     background: 'bg-gray-900',
     card: 'bg-gray-800',
     text: 'text-white',
-    gradient: 'from-gray-800 to-gray-900'
+    gradient: {
+      from: 'from-gray-800',
+      to: 'to-gray-900'
+    }
   },
   {
     name: 'Black',
@@ -38,7 +47,10 @@ const themes: ThemeOption[] = [
     background: 'bg-black',
     card: 'bg-gray-900',
     text: 'text-white',
-    gradient: 'from-black to-gray-900'
+    gradient: {
+      from: 'from-black',
+      to: 'to-gray-900'
+    }
   },
   {
     name: 'Purple',
@@ -46,7 +58,10 @@ const themes: ThemeOption[] = [
     background: 'bg-purple-50',
     card: 'bg-white',
     text: 'text-gray-900',
-    gradient: 'from-purple-50 to-indigo-50'
+    gradient: {
+      from: 'from-purple-50',
+      to: 'to-indigo-50'
+    }
   },
   {
     name: 'Green',
@@ -54,7 +69,10 @@ const themes: ThemeOption[] = [
     background: 'bg-emerald-50',
     card: 'bg-white',
     text: 'text-gray-900',
-    gradient: 'from-emerald-50 to-teal-50'
+    gradient: {
+      from: 'from-emerald-50',
+      to: 'to-teal-50'
+    }
   },
   {
     name: 'Blue',
@@ -62,7 +80,10 @@ const themes: ThemeOption[] = [
     background: 'bg-indigo-50',
     card: 'bg-white',
     text: 'text-gray-900',
-    gradient: 'from-blue-50 to-indigo-50'
+    gradient: {
+      from: 'from-blue-50',
+      to: 'to-indigo-50'
+    }
   }
 ];
 
@@ -99,8 +120,21 @@ const ThemeSwitcher = () => {
         'bg-gradient-to-br'
       );
       
+      // Remove any from/to classes that might exist from previous theme applications
+      const classesToRemove = [];
+      for (let i = 0; i < dashboardElement.classList.length; i++) {
+        const className = dashboardElement.classList[i];
+        if (className.startsWith('from-') || className.startsWith('to-')) {
+          classesToRemove.push(className);
+        }
+      }
+      classesToRemove.forEach(className => dashboardElement.classList.remove(className));
+      
       if (themeName === 'Black') {
-        dashboardElement.classList.add('bg-black', 'bg-gradient-to-br', 'from-black', 'to-gray-900');
+        dashboardElement.classList.add('bg-black');
+        dashboardElement.classList.add('bg-gradient-to-br');
+        dashboardElement.classList.add('from-black');
+        dashboardElement.classList.add('to-gray-900');
         document.querySelectorAll('.dashboard-card').forEach(card => {
           card.classList.remove('bg-white', 'bg-gray-800');
           card.classList.add('bg-gray-900', 'text-white', 'border-gray-800');
@@ -113,7 +147,10 @@ const ThemeSwitcher = () => {
           day.classList.add('text-white');
         });
       } else if (themeName === 'Dark') {
-        dashboardElement.classList.add('bg-gray-900', 'bg-gradient-to-br', 'from-gray-800', 'to-gray-900');
+        dashboardElement.classList.add('bg-gray-900');
+        dashboardElement.classList.add('bg-gradient-to-br');
+        dashboardElement.classList.add('from-gray-800');
+        dashboardElement.classList.add('to-gray-900');
         document.querySelectorAll('.dashboard-card').forEach(card => {
           card.classList.remove('bg-white', 'bg-gray-900');
           card.classList.add('bg-gray-800', 'text-white', 'border-gray-700');
@@ -128,7 +165,9 @@ const ThemeSwitcher = () => {
         
         // Apply gradient background based on theme
         if (theme.gradient) {
-          dashboardElement.classList.add('bg-gradient-to-br', theme.gradient);
+          dashboardElement.classList.add('bg-gradient-to-br');
+          dashboardElement.classList.add(theme.gradient.from);
+          dashboardElement.classList.add(theme.gradient.to);
         }
         
         if (themeName === 'Purple') {
