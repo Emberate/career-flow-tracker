@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '../hooks/use-mobile';
-import { ChevronDown, Briefcase, Users2, BarChart3, Star, ArrowRight, Shield } from 'lucide-react';
+import { Briefcase, Users2, BarChart3, Star, ArrowRight, Shield } from 'lucide-react';
 
 const HeroSection = () => {
   const isMobile = useIsMobile();
@@ -16,10 +16,6 @@ const HeroSection = () => {
     
     return () => clearTimeout(timer);
   }, []);
-  
-  const scrollToFeatures = () => {
-    document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
-  };
   
   return (
     <section className="relative min-h-screen py-20 px-6 sm:px-10 bg-black text-white overflow-hidden flex items-center">
@@ -94,7 +90,7 @@ const HeroSection = () => {
           </div>
         </div>
 
-        {/* Elegant preview section with improved styling */}
+        {/* Elegant preview section with improved styling - Removed "Explore Features" and down arrow */}
         <div className={`mt-16 relative transition-all duration-1000 delay-300 transform ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
           <div className="relative mx-auto overflow-hidden rounded-2xl shadow-2xl max-w-5xl transition-all duration-500 hover:shadow-[0_20px_80px_rgba(59,130,246,0.3)] border border-white/10">
             <div className="bg-gray-900/90 backdrop-blur-md rounded-t-2xl p-3 border-b border-white/10">
@@ -139,17 +135,6 @@ const HeroSection = () => {
                     <div className="h-8 w-8 rounded-full bg-purple-500/20 mr-2"></div>
                     <div className="h-3 bg-gray-700/60 rounded w-20"></div>
                   </div>
-                </div>
-              </div>
-              
-              {/* Elegant scroll indicator positioned inside the box */}
-              <div 
-                className="absolute bottom-4 left-1/2 transform -translate-x-1/2 cursor-pointer animate-bounce z-10"
-                onClick={scrollToFeatures}
-              >
-                <div className="flex flex-col items-center">
-                  <span className="text-sm text-gray-400 mb-1 backdrop-blur-sm px-3 py-1 rounded-full bg-white/5">Explore Features</span>
-                  <ChevronDown className="text-blue-400 h-6 w-6" />
                 </div>
               </div>
             </div>
