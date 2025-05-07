@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, User } from 'lucide-react';
 import AuthFooter from './AuthComponents/AuthFooter';
 import { useToast } from '@/hooks/use-toast';
+import { Card } from '@/components/ui/card';
 
 interface AuthFormProps {
   type: 'login' | 'signup';
@@ -59,29 +60,25 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
   };
 
   return (
-    <div className="max-w-md w-full mx-auto p-8 bg-white rounded-xl shadow-sm">
-      <h2 className="text-2xl font-bold text-center mb-6 text-gray-900 dark:text-white">
-        {type === 'login' ? 'Log In to Your Account' : 'Create Your Account'}
-      </h2>
-      
+    <div>
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+        <div className="bg-red-50 border border-red-100 text-red-600 px-4 py-3 rounded mb-4 text-sm">
           {error}
         </div>
       )}
       
       {/* Regular login/signup form */}
-      <form onSubmit={handleSubmit} className="space-y-4 mb-6">
+      <form onSubmit={handleSubmit} className="space-y-5">
         {type === 'signup' && (
           <div className="space-y-2">
-            <label htmlFor="username" className="text-sm font-medium">Username</label>
+            <label htmlFor="username" className="text-sm font-medium text-gray-700">Username</label>
             <div className="relative">
-              <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+              <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input 
                 id="username"
                 type="text"
                 placeholder="Enter your username"
-                className="pl-10"
+                className="pl-10 bg-white/70 border-gray-200 focus:border-blue-300 h-12"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
@@ -91,14 +88,14 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
         )}
         
         <div className="space-y-2">
-          <label htmlFor="email" className="text-sm font-medium">Email</label>
+          <label htmlFor="email" className="text-sm font-medium text-gray-700">Email</label>
           <div className="relative">
-            <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+            <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input 
               id="email"
               type="email"
               placeholder="Enter your email"
-              className="pl-10"
+              className="pl-10 bg-white/70 border-gray-200 focus:border-blue-300 h-12"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -107,14 +104,14 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
         </div>
         
         <div className="space-y-2">
-          <label htmlFor="password" className="text-sm font-medium">Password</label>
+          <label htmlFor="password" className="text-sm font-medium text-gray-700">Password</label>
           <div className="relative">
-            <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+            <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input 
               id="password"
               type="password"
               placeholder="Enter your password"
-              className="pl-10"
+              className="pl-10 bg-white/70 border-gray-200 focus:border-blue-300 h-12"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -124,7 +121,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
         
         <Button 
           type="submit" 
-          className="w-full" 
+          className="w-full h-12 text-base font-medium transition-all bg-blue-600 hover:bg-blue-700"
           disabled={isLoading}
         >
           {isLoading ? (
@@ -140,8 +137,6 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
           )}
         </Button>
       </form>
-      
-      {/* Remove demo user section from here as it's already in the Login/Signup pages */}
       
       <AuthFooter type={type} />
     </div>

@@ -5,6 +5,7 @@ import AuthForm from '../components/AuthForm';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { Card, CardContent } from '@/components/ui/card';
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -30,30 +31,45 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-blue-50 to-indigo-50">
       <Navbar />
-      <div className="flex-grow flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full space-y-8">
-          <AuthForm type="signup" />
-          
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300"></div>
+      <div className="flex-grow flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+        {/* Decorative elements */}
+        <div className="absolute top-1/3 left-1/3 w-64 h-64 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-float"></div>
+        <div className="absolute bottom-1/3 right-1/3 w-64 h-64 bg-indigo-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-float animate-delay-200"></div>
+        
+        <Card className="max-w-md w-full bg-white/80 backdrop-blur-sm shadow-lg border border-gray-100 rounded-xl">
+          <CardContent className="pt-6">
+            <div className="text-center mb-6">
+              <h2 className="text-3xl font-bold text-gray-900 mb-1">Create Account</h2>
+              <p className="text-gray-500">Join us to start your journey</p>
             </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-gray-50 text-gray-500">
-                or try the demo
-              </span>
+            
+            <AuthForm type="signup" />
+            
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-200"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white text-gray-500">
+                  or try the demo
+                </span>
+              </div>
             </div>
-          </div>
-          
-          <Button 
-            className="w-full py-6 text-lg"
-            onClick={handleDemoSignup}
-          >
-            Skip & Continue to Dashboard
-          </Button>
-        </div>
+            
+            <Button 
+              className="w-full py-6 text-lg transition-all hover:shadow-md bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700"
+              onClick={handleDemoSignup}
+            >
+              Skip & Continue to Dashboard
+            </Button>
+          </CardContent>
+        </Card>
+        
+        {/* Additional decorative elements */}
+        <div className="absolute -bottom-16 -left-16 w-64 h-64 bg-pink-100 rounded-full mix-blend-multiply filter blur-xl opacity-20"></div>
+        <div className="absolute -top-16 -right-16 w-64 h-64 bg-yellow-100 rounded-full mix-blend-multiply filter blur-xl opacity-20"></div>
       </div>
     </div>
   );
