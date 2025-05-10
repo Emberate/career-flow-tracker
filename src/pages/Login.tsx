@@ -6,16 +6,25 @@ import Navbar from '../components/Navbar';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { login, isAuthenticated, isLoading: authLoading } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/dashboard');
+    }
+  }, [isAuthenticated, navigate]);
+
   // Redirect if already in demo mode
-  React.useEffect(() => {
+  useEffect(() => {
     if (sessionStorage.getItem('demoMode') === 'true') {
       navigate('/dashboard');
     }
@@ -38,24 +47,34 @@ const Login = () => {
     }, 800);
   };
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
-    // This is a placeholder for actual login logic
-    // In a real app, you would validate credentials against your backend
-    setTimeout(() => {
-      toast({
-        title: "Login successful",
-        description: "Welcome back!",
-      });
-      navigate('/dashboard');
+    try {
+      await login(email, password);
+      // No need to navigate or show toast here as the AuthContext handles that
+    } catch (error: any) {
+      console.error('Login error:', error);
+      // Toast is handled by the AuthContext
+    } finally {
       setIsLoading(false);
-    }, 800);
+    }
   };
 
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-blue-50">
+        <Navbar />
+        <div className="flex-grow flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b bg-blue-50">
+    <div className="min-h-screen flex flex-col bg-blue-50">
       <Navbar />
       <div className="flex-grow flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
         {/* Decorative elements */}
@@ -163,6 +182,18 @@ const Login = () => {
                 "Continue as Demo User"
               )}
             </Button>
+            
+            <div className="mt-4 text-center">
+              <p className="text-sm text-gray-600">
+                Don't have an account?{" "}
+                <a 
+                  onClick={() => navigate('/signup')} 
+                  className="font-medium text-indigo-600 hover:text-indigo-500 cursor-pointer"
+                >
+                  Sign up
+                </a>
+              </p>
+            </div>
           </CardContent>
         </Card>
         

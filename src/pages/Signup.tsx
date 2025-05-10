@@ -6,15 +6,24 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const Signup = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { signup, isAuthenticated, isLoading: authLoading } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [fullName, setFullName] = useState('');
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/dashboard');
+    }
+  }, [isAuthenticated, navigate]);
 
   // Redirect if already in demo mode
   useEffect(() => {
@@ -39,7 +48,7 @@ const Signup = () => {
     }, 800);
   };
 
-  const handleSignup = (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Basic validation
@@ -54,20 +63,30 @@ const Signup = () => {
     
     setIsLoading(true);
     
-    // This is a placeholder for actual signup logic
-    // In a real app, you would create an account on your backend
-    setTimeout(() => {
-      toast({
-        title: "Account created successfully",
-        description: "Welcome to ProspectPath!",
-      });
-      navigate('/dashboard');
+    try {
+      await signup(email, fullName, password);
+      // No need to navigate or show toast here as the AuthContext handles that
+    } catch (error: any) {
+      console.error('Signup error:', error);
+      // Toast is handled by the AuthContext
+    } finally {
       setIsLoading(false);
-    }, 800);
+    }
   };
 
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-blue-50">
+        <Navbar />
+        <div className="flex-grow flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b bg-blue-50">
+    <div className="min-h-screen flex flex-col bg-blue-50">
       <Navbar />
       <div className="flex-grow flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
         {/* Decorative elements */}
@@ -189,6 +208,18 @@ const Signup = () => {
                 "Skip & Continue to Dashboard"
               )}
             </Button>
+            
+            <div className="mt-4 text-center">
+              <p className="text-sm text-gray-600">
+                Already have an account?{" "}
+                <a 
+                  onClick={() => navigate('/login')} 
+                  className="font-medium text-indigo-600 hover:text-indigo-500 cursor-pointer"
+                >
+                  Sign in
+                </a>
+              </p>
+            </div>
           </CardContent>
         </Card>
         
