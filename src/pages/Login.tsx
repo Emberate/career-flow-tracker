@@ -5,21 +5,14 @@ import { Button } from '@/components/ui/button';
 import Navbar from '../components/Navbar';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent } from '@/components/ui/card';
-import { SignIn, useAuth } from '@clerk/clerk-react';
 import { Loader2 } from 'lucide-react';
 
 const Login = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { isLoaded, userId } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
-
-  // Redirect if already authenticated with Clerk
-  React.useEffect(() => {
-    if (isLoaded && userId) {
-      navigate('/dashboard');
-    }
-  }, [isLoaded, userId, navigate]);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
   // Redirect if already in demo mode
   React.useEffect(() => {
@@ -45,6 +38,22 @@ const Login = () => {
     }, 800);
   };
 
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    
+    // This is a placeholder for actual login logic
+    // In a real app, you would validate credentials against your backend
+    setTimeout(() => {
+      toast({
+        title: "Login successful",
+        description: "Welcome back!",
+      });
+      navigate('/dashboard');
+      setIsLoading(false);
+    }, 800);
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b bg-blue-50">
       <Navbar />
@@ -60,26 +69,71 @@ const Login = () => {
               <p className="text-gray-500">Sign in to your account to continue</p>
             </div>
             
-            <div className="mb-6">
-              {isLoaded ? (
-                <SignIn 
-                  appearance={{
-                    elements: {
-                      rootBox: "w-full mx-auto",
-                      card: "shadow-none p-0 border-0 bg-transparent",
-                      header: "pb-2",
-                      footer: "hidden"
-                    }
-                  }}
-                  redirectUrl="/dashboard" 
-                  signUpUrl="/signup"
+            <form onSubmit={handleLogin} className="space-y-4 mb-6">
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                  Email
+                </label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
-              ) : (
-                <div className="w-full flex justify-center py-12">
-                  <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+              </div>
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                  Password
+                </label>
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  autoComplete="current-password"
+                  required
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <input
+                    id="remember-me"
+                    name="remember-me"
+                    type="checkbox"
+                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
+                    Remember me
+                  </label>
                 </div>
-              )}
-            </div>
+                <div className="text-sm">
+                  <a href="#" className="font-medium text-indigo-600 hover:text-indigo-500">
+                    Forgot your password?
+                  </a>
+                </div>
+              </div>
+              <div>
+                <button
+                  type="submit"
+                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    'Sign in'
+                  )}
+                </button>
+              </div>
+            </form>
             
             <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">
