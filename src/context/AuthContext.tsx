@@ -94,36 +94,51 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         password,
       });
 
-      // If there's an error (likely because the user doesn't exist), sign them up
       if (error) {
-        console.log("Login failed, creating demo account:", error);
-        
-        // Try to create the account
-        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            data: {
-              name: "Demo User",
-            },
+        // If the error is about email not confirmed, try to sign up again
+        if (error.message.includes('Email not confirmed')) {
+          console.log("Email not confirmed, attempting to create/verify account...");
+          
+          // Try to sign up with the same credentials
+          const { error: signUpError } = await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+              data: {
+                name: "User",
+              },
+            }
+          });
+          
+          if (signUpError) {
+            if (signUpError.message.includes('User already registered')) {
+              toast({
+                title: "Email verification required",
+                description: "Please check your email inbox and click the confirmation link to verify your account.",
+                variant: "destructive",
+              });
+              throw new Error("Please verify your email before logging in");
+            }
+            throw signUpError;
           }
-        });
-        
-        if (signUpError) {
-          // If signup also fails, it could be a rate limit issue
-          if (signUpError.message.includes('rate limit')) {
-            throw new Error("Too many requests. Please try again in a moment.");
+          
+          // Try directly signing in again - this works in development with confirmations disabled
+          const { error: retryError } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+          });
+          
+          if (retryError) {
+            toast({
+              title: "Email verification required",
+              description: "Please check your email inbox and click the confirmation link to verify your account.",
+              variant: "destructive",
+            });
+            throw retryError;
           }
-          throw signUpError;
+        } else {
+          throw error;
         }
-        
-        // Try signing in again after creating the account
-        const { error: retryError } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-        
-        if (retryError) throw retryError;
       }
       
       toast({
@@ -139,6 +154,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         toast({
           title: "Login temporarily unavailable",
           description: "Please try again in a moment",
+          variant: "destructive",
+        });
+      } else if (error.message && error.message.includes('Email not confirmed')) {
+        toast({
+          title: "Email verification required",
+          description: "Please check your email and click the verification link",
           variant: "destructive",
         });
       } else if (error.message && error.message.includes('invalid')) {
@@ -161,7 +182,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signup = async (email: string, name: string, password: string) => {
     try {
       // Create the user
-      const { error: signUpError } = await supabase.auth.signUp({
+      const { error: signUpError, data } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -178,17 +199,55 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           throw new Error("Too many signup attempts. Please try again in a moment.");
         } else if (signUpError.message.includes('invalid')) {
           throw new Error("Please use a valid email format.");
+        } else if (signUpError.message.includes('User already registered')) {
+          console.log("User already registered, trying to sign in directly");
+          // If user is already registered, try to sign in directly
+          const { error: signInError } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+          });
+          
+          if (signInError) {
+            if (signInError.message.includes('Email not confirmed')) {
+              toast({
+                title: "Email verification required",
+                description: "Please check your email inbox and click the confirmation link.",
+                variant: "destructive",
+              });
+              throw new Error("Please verify your email before logging in");
+            }
+            throw signInError;
+          }
+          
+          toast({
+            title: "Login successful",
+            description: "Welcome back to CareerFlow!",
+          });
+          
+          return;
         }
         throw signUpError;
       }
       
-      // Then immediately sign them in (no email verification)
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      // Check if email confirmation is required
+      if (data?.user && !data.session) {
+        toast({
+          title: "Signup successful",
+          description: "Please check your email inbox and click the confirmation link.",
+        });
+        return;
+      }
       
-      if (signInError) throw signInError;
+      // If we got here, it means email confirmation is not required
+      // Let's try to sign in directly
+      if (!data?.session) {
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        
+        if (signInError) throw signInError;
+      }
       
       toast({
         title: "Signup successful",

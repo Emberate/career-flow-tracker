@@ -8,43 +8,49 @@ import { useToast } from '@/hooks/use-toast';
 
 interface QuickLoginButtonProps {
   type: 'login' | 'signup';
+  className?: string;
 }
 
-const QuickLoginButton: React.FC<QuickLoginButtonProps> = ({ type }) => {
+const QuickLoginButton: React.FC<QuickLoginButtonProps> = ({ type, className = '' }) => {
   const [isLoading, setIsLoading] = useState(false);
   const { login, signup } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Using a guaranteed valid email format that works with Supabase
-  const validEmail = "user@example.com"; 
-  const password = "password123";
+  // Use a pre-defined demo account
+  const demoEmail = "demo@example.com"; 
+  const demoPassword = "Demo123456!";
+  const demoName = "Demo User";
 
-  const handleQuickLogin = async () => {
+  const handleQuickAccess = async () => {
     if (isLoading) return; // Prevent multiple clicks
     
     setIsLoading(true);
+    
     try {
       if (type === 'login') {
-        await login(validEmail, password);
+        await login(demoEmail, demoPassword);
       } else {
-        await signup(validEmail, "Demo User", password);
+        await signup(demoEmail, demoName, demoPassword);
       }
       
-      // Show success toast and navigate
-      toast({
-        title: "Success!",
-        description: `${type === 'login' ? 'Logged in' : 'Signed up'} successfully.`,
-      });
-      
+      // Navigate to dashboard on success
       navigate('/dashboard');
     } catch (error: any) {
       console.error('Auth error:', error);
-      toast({
-        title: `Quick ${type} failed`,
-        description: error.message || "There was an issue with the authentication. Please try again.",
-        variant: "destructive",
-      });
+      
+      // If we get an email confirmation error, let's try to help the user
+      if (error.message && error.message.includes('Email not confirmed')) {
+        // Try to use demo mode instead
+        sessionStorage.setItem('demoMode', 'true');
+        
+        toast({
+          title: "Using demo mode",
+          description: "Continuing in demo mode without authentication",
+        });
+        
+        navigate('/dashboard');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -53,8 +59,8 @@ const QuickLoginButton: React.FC<QuickLoginButtonProps> = ({ type }) => {
   return (
     <Button 
       type="button" 
-      className="w-full mb-6" 
-      onClick={handleQuickLogin}
+      className={`w-full ${className}`}
+      onClick={handleQuickAccess}
       disabled={isLoading}
     >
       {isLoading ? (
@@ -68,7 +74,7 @@ const QuickLoginButton: React.FC<QuickLoginButtonProps> = ({ type }) => {
       ) : (
         <span className="flex items-center">
           <Mail className="mr-2 h-4 w-4" />
-          {type === 'login' ? 'Quick Login to Dashboard' : 'Quick Signup & Access Dashboard'}
+          {type === 'login' ? 'Quick Login (Demo Account)' : 'Quick Access (Demo Account)'}
         </span>
       )}
     </Button>
