@@ -28,29 +28,23 @@ const QuickLoginButton: React.FC<QuickLoginButtonProps> = ({ type, className = '
     setIsLoading(true);
     
     try {
-      if (type === 'login') {
-        await login(demoEmail, demoPassword);
-      } else {
-        await signup(demoEmail, demoName, demoPassword);
-      }
+      // Skip real authentication and use demo mode directly
+      sessionStorage.setItem('demoMode', 'true');
       
-      // Navigate to dashboard on success
+      toast({
+        title: "Using demo mode",
+        description: "Continuing in demo mode without authentication",
+      });
+      
+      // Navigate to dashboard directly
       navigate('/dashboard');
     } catch (error: any) {
-      console.error('Auth error:', error);
-      
-      // If we get an email confirmation error, let's try to help the user
-      if (error.message && error.message.includes('Email not confirmed')) {
-        // Try to use demo mode instead
-        sessionStorage.setItem('demoMode', 'true');
-        
-        toast({
-          title: "Using demo mode",
-          description: "Continuing in demo mode without authentication",
-        });
-        
-        navigate('/dashboard');
-      }
+      console.error('Demo mode error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to enter demo mode. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -74,7 +68,7 @@ const QuickLoginButton: React.FC<QuickLoginButtonProps> = ({ type, className = '
       ) : (
         <span className="flex items-center">
           <Mail className="mr-2 h-4 w-4" />
-          {type === 'login' ? 'Quick Login (Demo Account)' : 'Quick Access (Demo Account)'}
+          {type === 'login' ? 'Skip & Continue as Guest' : 'Skip & Continue as Guest'}
         </span>
       )}
     </Button>
