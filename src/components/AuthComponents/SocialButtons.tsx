@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Linkedin, Github, Mail } from 'lucide-react';
+import { Github, Mail } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 
@@ -15,13 +15,14 @@ const SocialButtons = () => {
     
     setSocialLoading(provider);
     try {
+      console.log(`Attempting to sign in with ${provider}...`);
       await signInWithProvider(provider);
       // No need for toast here as it's handled in AuthContext
     } catch (error: any) {
       console.error(`${provider} login error:`, error);
       toast({
         title: "Authentication failed",
-        description: `Could not authenticate with ${provider}. Please try another method or continue as guest.`,
+        description: `Could not authenticate with ${provider}. Please check your OAuth configuration in Supabase.`,
         variant: "destructive",
       });
     } finally {
