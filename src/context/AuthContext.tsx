@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Session, User } from '@supabase/supabase-js';
+import { Session, User, Provider } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -20,6 +20,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   updateUserProfile: (updates: Partial<UserProfile>) => Promise<void>;
+  signInWithProvider: (provider: Provider) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -87,54 +88,72 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const signInWithProvider = async (provider: Provider) => {
+    try {
+      setIsLoading(true);
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: provider,
+        options: {
+          redirectTo: `${window.location.origin}/dashboard`,
+        },
+      });
+
+      if (error) throw error;
+      
+      toast({
+        title: "Redirecting...",
+        description: `Connecting to ${provider}...`,
+      });
+      
+    } catch (error: any) {
+      console.error(`${provider} login error:`, error);
+      toast({
+        title: "Authentication failed",
+        description: error.message || `Could not authenticate with ${provider}`,
+        variant: "destructive",
+      });
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const login = async (email: string, password: string) => {
     try {
+      setIsLoading(true);
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) {
-        // If the error is about email not confirmed, try to sign up again
-        if (error.message.includes('Email not confirmed')) {
-          console.log("Email not confirmed, attempting to create/verify account...");
-          
-          // Try to sign up with the same credentials
+        // If authentication fails, try direct signup and login
+        if (error.message.includes('Invalid login credentials')) {
+          // Try signup first
           const { error: signUpError } = await supabase.auth.signUp({
             email,
             password,
             options: {
               data: {
-                name: "User",
+                name: email.split('@')[0], // Use part of email as name
               },
             }
           });
           
-          if (signUpError) {
-            if (signUpError.message.includes('User already registered')) {
-              toast({
-                title: "Email verification required",
-                description: "Please check your email inbox and click the confirmation link to verify your account.",
-                variant: "destructive",
-              });
-              throw new Error("Please verify your email before logging in");
-            }
-            throw signUpError;
-          }
-          
-          // Try directly signing in again - this works in development with confirmations disabled
-          const { error: retryError } = await supabase.auth.signInWithPassword({
-            email,
-            password,
-          });
-          
-          if (retryError) {
-            toast({
-              title: "Email verification required",
-              description: "Please check your email inbox and click the confirmation link to verify your account.",
-              variant: "destructive",
+          // If signup worked or user already exists, try login again
+          if (!signUpError || signUpError.message.includes('User already registered')) {
+            // Try login again
+            const { error: retryError } = await supabase.auth.signInWithPassword({
+              email,
+              password,
             });
-            throw retryError;
+            
+            // If login still fails, show specific error
+            if (retryError) {
+              throw retryError;
+            }
+          } else {
+            throw signUpError;
           }
         } else {
           throw error;
@@ -143,46 +162,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       toast({
         title: "Login successful",
-        description: "Welcome to CareerFlow!",
+        description: "Welcome to ProspectPath!",
       });
       
     } catch (error: any) {
       console.error('Login error:', error);
       
       // Handle specific errors
-      if (error.message && error.message.includes('rate limit')) {
+      if (error.message && error.message.includes('Email not confirmed')) {
+        // If email not confirmed, use demo mode
+        sessionStorage.setItem('demoMode', 'true');
         toast({
-          title: "Login temporarily unavailable",
-          description: "Please try again in a moment",
-          variant: "destructive",
+          title: "Using guest mode",
+          description: "Continuing as a guest user",
         });
-      } else if (error.message && error.message.includes('Email not confirmed')) {
-        toast({
-          title: "Email verification required",
-          description: "Please check your email and click the verification link",
-          variant: "destructive",
-        });
-      } else if (error.message && error.message.includes('invalid')) {
-        toast({
-          title: "Login failed",
-          description: "Please check your email format and try again",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Login failed",
-          description: error.message || "An error occurred during login",
-          variant: "destructive",
-        });
+        window.location.href = '/dashboard';
+        return;
       }
+      
+      toast({
+        title: "Login failed",
+        description: "Please try with social login or continue as guest",
+        variant: "destructive",
+      });
       throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const signup = async (email: string, name: string, password: string) => {
     try {
-      // Create the user
-      const { error: signUpError, data } = await supabase.auth.signUp({
+      setIsLoading(true);
+      // Create the user without email confirmation
+      const { error, data } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -193,15 +206,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         },
       });
 
-      if (signUpError) {
-        // Handle specific errors
-        if (signUpError.message.includes('rate limit')) {
-          throw new Error("Too many signup attempts. Please try again in a moment.");
-        } else if (signUpError.message.includes('invalid')) {
-          throw new Error("Please use a valid email format.");
-        } else if (signUpError.message.includes('User already registered')) {
-          console.log("User already registered, trying to sign in directly");
-          // If user is already registered, try to sign in directly
+      if (error) {
+        // If user already exists, try direct login
+        if (error.message.includes('User already registered')) {
           const { error: signInError } = await supabase.auth.signInWithPassword({
             email,
             password,
@@ -209,59 +216,70 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           
           if (signInError) {
             if (signInError.message.includes('Email not confirmed')) {
+              // If email not confirmed, use demo mode
+              sessionStorage.setItem('demoMode', 'true');
               toast({
-                title: "Email verification required",
-                description: "Please check your email inbox and click the confirmation link.",
-                variant: "destructive",
+                title: "Using guest mode",
+                description: "Continuing as a guest user",
               });
-              throw new Error("Please verify your email before logging in");
+              window.location.href = '/dashboard';
+              return;
             }
             throw signInError;
           }
           
           toast({
             title: "Login successful",
-            description: "Welcome back to CareerFlow!",
+            description: "Welcome back to ProspectPath!",
           });
-          
           return;
         }
-        throw signUpError;
+        throw error;
       }
       
-      // Check if email confirmation is required
-      if (data?.user && !data.session) {
+      // If we got a session, proceed to dashboard
+      if (data?.session) {
         toast({
           title: "Signup successful",
-          description: "Please check your email inbox and click the confirmation link.",
+          description: "Welcome to ProspectPath!",
         });
-        return;
-      }
-      
-      // If we got here, it means email confirmation is not required
-      // Let's try to sign in directly
-      if (!data?.session) {
+      } else {
+        // If no session but signup worked, try direct login
         const { error: signInError } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
         
-        if (signInError) throw signInError;
+        if (signInError) {
+          // If login fails due to email confirmation, use demo mode
+          if (signInError.message.includes('Email not confirmed')) {
+            sessionStorage.setItem('demoMode', 'true');
+            toast({
+              title: "Using guest mode",
+              description: "Continuing as a guest user",
+            });
+            window.location.href = '/dashboard';
+            return;
+          }
+          throw signInError;
+        }
+        
+        toast({
+          title: "Signup successful",
+          description: "Welcome to ProspectPath!",
+        });
       }
-      
-      toast({
-        title: "Signup successful",
-        description: "Welcome to CareerFlow! Your account has been created.",
-      });
       
     } catch (error: any) {
       console.error('Signup error:', error);
       toast({
         title: "Signup failed",
-        description: error.message || "An error occurred during signup",
+        description: "Please try with social login or continue as guest",
         variant: "destructive",
       });
       throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -269,6 +287,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
+      
+      // Clear demo mode if active
+      sessionStorage.removeItem('demoMode');
       
       setUser(null);
       setProfile(null);
@@ -327,7 +348,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       logout, 
       isAuthenticated,
       isLoading,
-      updateUserProfile
+      updateUserProfile,
+      signInWithProvider
     }}>
       {children}
     </AuthContext.Provider>

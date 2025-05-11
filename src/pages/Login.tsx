@@ -5,13 +5,14 @@ import { Button } from '@/components/ui/button';
 import Navbar from '../components/Navbar';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent } from '@/components/ui/card';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Github, LogIn } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import QuickLoginButton from '../components/AuthComponents/QuickLoginButton';
 
 const Login = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { login, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { login, signInWithProvider, isAuthenticated, isLoading: authLoading } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -30,23 +31,6 @@ const Login = () => {
     }
   }, [navigate]);
 
-  const handleDemoLogin = () => {
-    setIsLoading(true);
-    
-    // Set demo mode flag in session storage
-    sessionStorage.setItem('demoMode', 'true');
-    
-    // Simple demo login - in a real app this would validate credentials
-    setTimeout(() => {
-      toast({
-        title: "Demo login successful",
-        description: "Welcome to the dashboard!",
-      });
-      navigate('/dashboard');
-      setIsLoading(false);
-    }, 800);
-  };
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -59,6 +43,22 @@ const Login = () => {
       // Toast is handled by the AuthContext
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    try {
+      await signInWithProvider('google');
+    } catch (error) {
+      console.error("Google login error:", error);
+    }
+  };
+
+  const handleGithubLogin = async () => {
+    try {
+      await signInWithProvider('github');
+    } catch (error) {
+      console.error("GitHub login error:", error);
     }
   };
 
@@ -86,6 +86,39 @@ const Login = () => {
             <div className="text-center mb-6">
               <h2 className="text-3xl font-bold text-gray-900 mb-1">Welcome Back</h2>
               <p className="text-gray-500">Sign in to your account to continue</p>
+            </div>
+            
+            <div className="space-y-3 mb-6">
+              <Button 
+                type="button" 
+                onClick={handleGoogleLogin}
+                className="w-full bg-white hover:bg-gray-50 text-black border border-gray-300"
+              >
+                <svg className="mr-2 h-4 w-4" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512">
+                  <path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"></path>
+                </svg>
+                Continue with Google
+              </Button>
+              
+              <Button 
+                type="button" 
+                onClick={handleGithubLogin}
+                className="w-full bg-[#24292F] hover:bg-[#24292F]/90 text-white"
+              >
+                <Github className="mr-2 h-4 w-4" />
+                Continue with GitHub
+              </Button>
+            </div>
+            
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-200"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white text-gray-500">
+                  or continue with email
+                </span>
+              </div>
             </div>
             
             <form onSubmit={handleLogin} className="space-y-4 mb-6">
@@ -160,28 +193,12 @@ const Login = () => {
               </div>
               <div className="relative flex justify-center text-sm">
                 <span className="px-2 bg-white text-gray-500">
-                  or try it instantly
+                  don't want to create an account?
                 </span>
               </div>
             </div>
             
-            <Button 
-              className="w-full py-6 text-lg transition-all hover:shadow-md bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700"
-              onClick={handleDemoLogin}
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <span className="flex items-center justify-center">
-                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Processing...
-                </span>
-              ) : (
-                "Continue as Demo User"
-              )}
-            </Button>
+            <QuickLoginButton type="login" />
             
             <div className="mt-4 text-center">
               <p className="text-sm text-gray-600">
