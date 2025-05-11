@@ -20,11 +20,21 @@ const SocialButtons = () => {
       // No need for toast here as it's handled in AuthContext
     } catch (error: any) {
       console.error(`${provider} login error:`, error);
-      toast({
-        title: "Authentication failed",
-        description: `Could not authenticate with ${provider}. Please check your OAuth configuration in Supabase.`,
-        variant: "destructive",
-      });
+      
+      // Provide more helpful error message specifically for GitHub
+      if (provider === 'github') {
+        toast({
+          title: "GitHub Authentication Failed",
+          description: "Please ensure your GitHub OAuth app is correctly configured in Supabase with the proper Client ID and Client Secret from GitHub.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Authentication failed",
+          description: `Could not authenticate with ${provider}. Please check your OAuth configuration in Supabase.`,
+          variant: "destructive",
+        });
+      }
     } finally {
       setSocialLoading(null);
     }
